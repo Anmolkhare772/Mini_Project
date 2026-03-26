@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SENTINEL LABS | Cybersecurity Threat Detection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "secondary": "#c2c7d0",
+                "primary-fixed-dim": "#4cd6ff",
+                "error-container": "#93000a",
+                "primary-fixed": "#b7eaff",
+                "on-surface": "#e3e1e9",
+                "on-tertiary-fixed": "#022100",
+                "primary-container": "#00d1ff",
+                "on-secondary-container": "#b1b5bf",
+                "on-primary-container": "#00566a",
+                "outline-variant": "#3c494e",
+                "on-error-container": "#ffdad6",
+                "on-tertiary-fixed-variant": "#095300",
+                "secondary-fixed": "#dee2ec",
+                "on-error": "#690005",
+                "surface-bright": "#38393f",
+                "background": "#121318",
+                "surface-container-lowest": "#0d0e13",
+                "surface-container-low": "#1a1b21",
+                "on-primary-fixed-variant": "#004e60",
+                "surface-container-highest": "#34343a",
+                "on-background": "#e3e1e9",
+                "on-tertiary-container": "#0b5b00",
+                "surface-container-high": "#292a2f",
+                "tertiary-fixed-dim": "#2ae500",
+                "on-tertiary": "#053900",
+                "on-primary-fixed": "#001f28",
+                "on-secondary-fixed-variant": "#42474f",
+                "secondary-fixed-dim": "#c2c7d0",
+                "outline": "#859399",
+                "on-secondary-fixed": "#171c23",
+                "surface-tint": "#4cd6ff",
+                "tertiary-container": "#28de00",
+                "secondary-container": "#42474f",
+                "primary": "#a4e6ff",
+                "surface-container": "#1e1f25",
+                "inverse-surface": "#e3e1e9",
+                "surface": "#121318",
+                "inverse-primary": "#00677f",
+                "on-primary": "#003543",
+                "inverse-on-surface": "#2f3036",
+                "error": "#ffb4ab",
+                "tertiary": "#37fe11",
+                "surface-dim": "#121318",
+                "tertiary-fixed": "#79ff5b",
+                "on-surface-variant": "#bbc9cf",
+                "on-secondary": "#2c3138",
+                "surface-variant": "#34343a"
+              },
+              fontFamily: {
+                "headline": ["Space Grotesk"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .hex-grid {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cpath fill='%2300d1ff' fill-opacity='0.03' d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.89v12.22l10.99 6.34L25 30.11V17.89L13.99 11.55 3 17.89z'/%3E%3C/svg%3E");
+        }
+        .tonal-stacking {
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        .glass-effect {
+            background: rgba(52, 52, 58, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#121318]/80 backdrop-blur-xl border-b border-[#292a2f]/30 shadow-[0_0_15px_rgba(0,209,255,0.05)]">
+<div class="flex items-center justify-between px-6 h-16 w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-black tracking-tighter text-[#00D1FF] uppercase font-headline">SENTINEL LABS</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-[#00D1FF] border-b-2 border-[#00D1FF] pb-1 font-headline font-bold tracking-tight" href="#">Features</a>
+<a class="text-[#e3e1e9]/60 hover:text-[#e3e1e9] font-headline font-bold tracking-tight transition-all duration-300" href="#">Cloud Analytics</a>
+<a class="text-[#e3e1e9]/60 hover:text-[#e3e1e9] font-headline font-bold tracking-tight transition-all duration-300" href="#">Documentation</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center gap-2 mr-4">
+<button class="p-2 text-[#e3e1e9]/60 hover:text-[#00D1FF] transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-[#e3e1e9]/60 hover:text-[#00D1FF] transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<button class="px-4 py-1.5 text-sm font-medium text-[#e3e1e9]/80 hover:text-white transition-all">Login</button>
+<button class="px-5 py-2 bg-primary-container text-on-primary-fixed font-bold rounded-sm shadow-[0_0_12px_rgba(0,209,255,0.3)] hover:shadow-[0_0_18px_rgba(0,209,255,0.5)] transition-all active:scale-95">Get Started</button>
+</div>
+</div>
+</nav>
+<main class="relative pt-16">
+<!-- Background Decor -->
+<div class="fixed inset-0 pointer-events-none z-0">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full hex-grid opacity-30"></div>
+<div class="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-surface-tint opacity-[0.03] blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-primary-container opacity-[0.02] blur-[100px] rounded-full"></div>
+</div>
+<!-- Hero Section -->
+<section class="relative z-10 container mx-auto px-6 py-20 lg:py-32 flex flex-col lg:flex-row items-center gap-16">
+<div class="lg:w-1/2 space-y-8">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary-container/20 bg-primary-container/5 text-primary-container text-xs font-bold tracking-widest uppercase">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary-container"></span>
+</span>
+                    System Status: Operational
+                </div>
+<h1 class="text-5xl lg:text-7xl font-black font-headline tracking-tighter leading-[0.9] text-on-surface">
+                    THE DIGITAL <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-container to-primary-fixed-dim">PANOPTICON</span>
+</h1>
+<p class="text-lg lg:text-xl text-on-surface-variant max-w-xl font-light leading-relaxed">
+                    Surgically precise threat intelligence. We transform complex network telemetry into authoritative visual command, ensuring your infrastructure remains an impenetrable fortress.
+                </p>
+<div class="flex flex-wrap gap-4">
+<button class="px-8 py-4 bg-primary-container text-on-primary-fixed font-bold text-lg rounded-sm shadow-[0_0_20px_rgba(0,209,255,0.3)] hover:shadow-[0_0_30px_rgba(0,209,255,0.4)] transition-all active:scale-95 flex items-center gap-3">
+                        INITIALIZE DEPLOYMENT
+                        <span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</button>
+<button class="px-8 py-4 border border-outline-variant hover:border-primary-container/50 hover:bg-surface-container-high transition-all text-on-surface font-bold text-lg rounded-sm">
+                        VIEW PROTOCOLS
+                    </button>
+</div>
+</div>
+<div class="lg:w-1/2 relative">
+<div class="relative w-full aspect-square max-w-xl mx-auto">
+<!-- Tactical Visual Mockup -->
+<div class="absolute inset-0 bg-surface-container rounded-sm border border-outline-variant/20 overflow-hidden tonal-stacking">
+<img alt="Cybersecurity Interface" class="w-full h-full object-cover opacity-40 mix-blend-luminosity" data-alt="futuristic dark blue glowing digital map of the world with data connection lines and cybersecurity pulse nodes in a dark room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-974GsNlZstXLtBiQjrjw34nEpyRDkBKa_SVlR7Fz55UST4KOW-p89xCcmvUXMKod--sNkgSHjDFQOIfCbvIh9B-3rLTXOyTisGPF4CB-H-iPb9Nhvz73SOTQ7IU9CiE72dd2e5DB9BlFuilzfphqbFKJsAZwNZj8OLZQPhTxl8uSAFg73Acm6iwM9U2UlWnmJOfVTXQbt3Lqq3PnqW-Nfw9ddGFKUWlReeA_5McvmkrfD3trcNt70rUt10YH3LkYni4k9r6nt6BB"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+<!-- HUD Elements Overlay -->
+<div class="absolute top-4 left-4 right-4 flex justify-between items-start">
+<div class="p-3 glass-effect border border-white/5 rounded-sm">
+<div class="text-[10px] text-primary-container font-headline font-black uppercase tracking-widest mb-1">Threat Vector</div>
+<div class="text-xl font-headline font-bold text-on-surface">98.2% ACCURACY</div>
+</div>
+<div class="p-3 glass-effect border border-white/5 rounded-sm flex flex-col items-end">
+<div class="text-[10px] text-tertiary font-headline font-black uppercase tracking-widest mb-1">Active Scans</div>
+<div class="flex gap-1">
+<div class="w-1 h-4 bg-tertiary/20"></div>
+<div class="w-1 h-4 bg-tertiary/40"></div>
+<div class="w-1 h-4 bg-tertiary/60"></div>
+<div class="w-1 h-4 bg-tertiary"></div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-4 left-4 right-4 h-32 glass-effect border border-white/5 rounded-sm p-4 overflow-hidden">
+<div class="flex justify-between items-center mb-4">
+<span class="text-[10px] text-on-surface/40 uppercase tracking-[0.2em]">Real-time Telemetry Readout</span>
+<span class="text-[10px] text-error font-bold uppercase">Breach Attempt Blocked</span>
+</div>
+<div class="space-y-1 font-mono text-[10px] text-primary-container/70">
+<div class="flex justify-between"><span>[SYSTEM] ANALYZING PACKET 0x4F2...</span><span>OK</span></div>
+<div class="flex justify-between"><span>[NETWORK] HANDSHAKE ENCRYPTED...</span><span>SECURE</span></div>
+<div class="flex justify-between"><span>[THREAT] NOCTURNAL-V2 DETECTED...</span><span class="text-error">QUARANTINED</span></div>
+<div class="flex justify-between"><span>[CORE] OPTIMIZING LATENCY...</span><span>12ms</span></div>
+</div>
+</div>
+</div>
+<!-- Decorative accents -->
+<div class="absolute -top-4 -right-4 w-24 h-24 border-t-2 border-r-2 border-primary-container/30"></div>
+<div class="absolute -bottom-4 -left-4 w-24 h-24 border-b-2 border-l-2 border-primary-container/30"></div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="relative z-10 container mx-auto px-6 py-20">
+<div class="mb-16">
+<h2 class="text-sm font-headline font-black text-primary-container tracking-[0.3em] uppercase mb-4">Core Capabilities</h2>
+<div class="text-3xl lg:text-4xl font-headline font-bold text-on-surface">ADVANCED DEFENSE ARCHITECTURE</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Card 1 -->
+<div class="group bg-surface-container-low p-8 border border-outline-variant/10 rounded-sm hover:bg-surface-container transition-all duration-500 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-8xl" data-icon="security">security</span>
+</div>
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-sm bg-primary-container/10 flex items-center justify-center mb-6 text-primary-container group-hover:bg-primary-container group-hover:text-on-primary-fixed transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-3 uppercase tracking-tight">Threat Detection</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                            Next-generation heuristics engine that identifies anomalous patterns before they manifest into breaches.
+                        </p>
+<div class="flex items-center gap-2 text-primary-container font-bold text-xs uppercase tracking-widest group-hover:gap-4 transition-all">
+                            Explore Module <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group bg-surface-container-low p-8 border border-outline-variant/10 rounded-sm hover:bg-surface-container transition-all duration-500 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-8xl" data-icon="cloud_sync">cloud_sync</span>
+</div>
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-sm bg-primary-container/10 flex items-center justify-center mb-6 text-primary-container group-hover:bg-primary-container group-hover:text-on-primary-fixed transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="cloud_sync">cloud_sync</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-3 uppercase tracking-tight">Cloud Analytics</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                            Elastic data processing pipelines that scale with your infrastructure, providing deep-packet visibility across all nodes.
+                        </p>
+<div class="flex items-center gap-2 text-primary-container font-bold text-xs uppercase tracking-widest group-hover:gap-4 transition-all">
+                            Explore Module <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group bg-surface-container-low p-8 border border-outline-variant/10 rounded-sm hover:bg-surface-container transition-all duration-500 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-8xl" data-icon="bolt">bolt</span>
+</div>
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-sm bg-primary-container/10 flex items-center justify-center mb-6 text-primary-container group-hover:bg-primary-container group-hover:text-on-primary-fixed transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-3 uppercase tracking-tight">Instant Alerts</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                            Sub-second notification latency via encrypted channels. Never miss a critical system event, no matter your location.
+                        </p>
+<div class="flex items-center gap-2 text-primary-container font-bold text-xs uppercase tracking-widest group-hover:gap-4 transition-all">
+                            Explore Module <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Dynamic Stat Section -->
+<section class="relative z-10 bg-surface-container-lowest py-20 border-y border-outline-variant/10">
+<div class="container mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-12">
+<div class="text-center lg:text-left">
+<div class="text-4xl font-headline font-black text-on-surface mb-1">4.2B+</div>
+<div class="text-[10px] text-on-surface/40 uppercase tracking-[0.2em]">Packets Scanned / Day</div>
+</div>
+<div class="text-center lg:text-left">
+<div class="text-4xl font-headline font-black text-on-surface mb-1">12MS</div>
+<div class="text-[10px] text-on-surface/40 uppercase tracking-[0.2em]">Avg Response Latency</div>
+</div>
+<div class="text-center lg:text-left">
+<div class="text-4xl font-headline font-black text-on-surface mb-1">99.9%</div>
+<div class="text-[10px] text-on-surface/40 uppercase tracking-[0.2em]">Uptime Guarantee</div>
+</div>
+<div class="text-center lg:text-left">
+<div class="text-4xl font-headline font-black text-on-surface mb-1">ZERO</div>
+<div class="text-[10px] text-on-surface/40 uppercase tracking-[0.2em]">Undetected Breaches</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="relative z-10 container mx-auto px-6 py-24">
+<div class="bg-gradient-to-br from-surface-container-high to-surface-container-low p-12 lg:p-20 rounded-sm border border-primary-container/10 flex flex-col items-center text-center relative overflow-hidden">
+<div class="absolute inset-0 hex-grid opacity-10"></div>
+<div class="relative z-10 max-w-2xl">
+<h2 class="text-4xl lg:text-5xl font-headline font-black text-on-surface mb-6 uppercase tracking-tight">READY TO ENFORCE <br/><span class="text-primary-container">ZERO TRUST?</span></h2>
+<p class="text-on-surface-variant text-lg mb-10 font-light">
+                        Join elite security teams using Sentinel Labs to protect high-value digital assets. Deploy your first node in minutes.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button class="px-10 py-4 bg-primary-container text-on-primary-fixed font-bold text-lg rounded-sm shadow-[0_0_20px_rgba(0,209,255,0.3)] hover:shadow-[0_0_40px_rgba(0,209,255,0.5)] transition-all">START FREE TRIAL</button>
+<button class="px-10 py-4 border border-outline text-on-surface font-bold text-lg rounded-sm hover:bg-on-surface/5 transition-all">TALK TO AN AGENT</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full py-8 mt-auto bg-[#121318] border-t border-[#292a2f]/20">
+<div class="flex flex-col items-center gap-4 px-8">
+<div class="font-bold text-[#00D1FF] font-headline tracking-tighter text-lg">SENTINEL THREAT LABS</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-[#e3e1e9]/40 hover:text-[#00D1FF] font-['Inter'] text-[10px] tracking-widest uppercase transition-opacity duration-300" href="#">Privacy Protocol</a>
+<a class="text-[#e3e1e9]/40 hover:text-[#00D1FF] font-['Inter'] text-[10px] tracking-widest uppercase transition-opacity duration-300" href="#">Terms of Engagement</a>
+<a class="text-[#e3e1e9]/40 hover:text-[#00D1FF] font-['Inter'] text-[10px] tracking-widest uppercase transition-opacity duration-300" href="#">API Docs</a>
+</div>
+<div class="text-[#e3e1e9]/40 font-['Inter'] text-[10px] tracking-widest uppercase opacity-40">
+                    © 2024 SENTINEL THREAT LABS. ENCRYPTED CONNECTION.
+                </div>
+</div>
+</footer>
+</main>
+</body></html>
