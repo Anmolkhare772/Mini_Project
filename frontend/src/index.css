@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-body m-0 p-0 antialiased overflow-hidden h-screen w-screen selection:bg-primary/30 selection:text-primary;
+  }
+  
+  /* Scanline Overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,.03) 2px,
+      rgba(0,0,0,.03) 4px
+    );
+  }
+}
+
+@layer components {
+  /* Cards */
+  .card {
+    @apply bg-surface-container rounded-sm border border-white/5 p-[0.6rem];
+  }
+
+  /* Glassmorphism */
+  .glass {
+    @apply backdrop-blur-md bg-[#33343b]/40 border border-white/10;
+  }
+
+  /* Button Overrides */
+  .btn-primary {
+    @apply bg-primary text-on-primary-fixed px-4 py-2 rounded-sm font-display font-medium shadow-glow-primary transition-all duration-200;
+  }
+  .btn-primary:hover {
+    @apply shadow-glow-primary-hover bg-primary/95;
+  }
+  
+  .btn-ghost {
+    @apply bg-surface px-4 py-2 border border-white/15 text-on-surface rounded-sm transition-all duration-200 hover:border-primary/50 hover:shadow-[0_0_8px_rgba(0,209,255,0.2)];
+  }
+
+  /* Inputs */
+  .ghost-input {
+    @apply w-full bg-[#121318] border border-white/15 rounded-sm p-3 text-on-surface outline-none transition-all duration-200 placeholder:text-on-surface-variant font-body;
+  }
+  .ghost-input:focus {
+    @apply border-primary shadow-[0_0_8px_rgba(0,209,255,0.2)];
+  }
+
+  /* Typography Utilities */
+  .text-tactical {
+    @apply font-display tracking-tight;
+  }
+  .text-data {
+    @apply font-body tabular-nums;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-container border-2 border-transparent bg-clip-content;
+}
