@@ -1,0 +1,22 @@
+# Environment
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Node 
+node_modules/
+dist/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment Variables
+.env
