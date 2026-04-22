@@ -123,8 +123,53 @@ def run_detection():
                  db.session.add(alert)
                  new_alerts.append(alert)
                  
+    # 5. Generic Keyword Threats (from uploaded detect (1).py)
+    generic_keywords = ["failed", "attack", "sql", "scan"]
+    for log in Log.query.filter(Log.timestamp >= five_mins_ago).all():
+        log_details_lower = log.details.lower()
+        # Ensure we don't duplicate alerts for the same log line
+        if any(keyword in log_details_lower for keyword in generic_keywords):
+             recent_alert = Alert.query.filter(
+                Alert.source_ip == log.ip_address,
+                Alert.alert_type == "KEYWORD_MATCH",
+                Alert.timestamp >= five_mins_ago
+             ).first()
+             
+             if not recent_alert:
+                 alert = Alert(
+                     alert_type="KEYWORD_MATCH",
+                     severity="high",
+                     description=f"Rule-Based Text Match: '{log.details[:50]}' contained flagged keywords.",
+                     source_ip=log.ip_address,
+                     timestamp=datetime.now(timezone.utc)
+                 )
+                 db.session.add(alert)
+                 new_alerts.append(alert)
+
+    # 6. Brute Force Login Detection (from ChatGPT detect_threat() logic)
+    # Detects any log containing "failed login" phrase — maps directly to ChatGPT's rule
+    brute_force_logs = Log.query.filter(Log.timestamp >= five_mins_ago).all()
+    for log in brute_force_logs:
+        if "failed login" in log.details.lower():
+            recent_alert = Alert.query.filter(
+                Alert.source_ip == log.ip_address,
+                Alert.alert_type == "BRUTE_FORCE_LOGIN",
+                Alert.timestamp >= five_mins_ago
+            ).first()
+            if not recent_alert:
+                alert = Alert(
+                    alert_type="BRUTE_FORCE_LOGIN",
+                    severity="high",
+                    description=f"⚠️ Brute Force Login Detected from IP {log.ip_address}: '{log.details[:60]}'",
+                    source_ip=log.ip_address,
+                    timestamp=datetime.now(timezone.utc)
+                )
+                db.session.add(alert)
+                new_alerts.append(alert)
+                print(f"⚠️ Brute force detected from {log.ip_address}")
 
     if new_alerts:
         db.session.commit()
         
     return new_alerts
+

@@ -88,12 +88,13 @@ const Dashboard = () => {
         </div>
 
         {/* Threat Types Pie */}
-        <div className="card flex flex-col min-h-[300px]">
-          <h3 className="text-xs font-semibold text-on-surface-variant uppercase tracking-widest mb-4 flex items-center gap-2">
+        <div className="card flex flex-col overflow-hidden">
+          <h3 className="text-xs font-semibold text-on-surface-variant uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-error shadow-[0_0_6px_#ff3b5c]"></span>
             Threat Types
           </h3>
-          <div className="flex-1 w-full min-h-[250px] relative">
+          {/* Chart — fixed height so it never pushes the legend out */}
+          <div className="w-full shrink-0" style={{ height: '220px' }}>
             {stats.threat_types.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -110,24 +111,23 @@ const Dashboard = () => {
                       <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ backgroundColor: '#1e1f25', borderColor: '#253048', borderRadius: '4px', fontSize: '11px' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-sm text-on-surface-variant">No explicit threat data.</div>
+              <div className="flex items-center justify-center h-full text-sm text-on-surface-variant">No explicit threat data.</div>
             )}
-            
-            {/* Custom Legend */}
-            <div className="mt-4 grid grid-cols-2 gap-2 px-2">
-              {stats.threat_types.map((t, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-[10px] text-on-surface">
-                  <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}></div>
-                  <span className="truncate" title={t.type}>{t.type}</span>
-                </div>
-              ))}
-            </div>
+          </div>
+          {/* Legend — always below the chart, never overlapping */}
+          <div className="mt-3 grid grid-cols-2 gap-2 px-2 shrink-0">
+            {stats.threat_types.map((t, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-[10px] text-on-surface">
+                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}></div>
+                <span className="truncate" title={t.type}>{t.type}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -168,7 +168,7 @@ const Dashboard = () => {
                 </div>
                 <div className="text-[10px] text-on-surface-variant/70 font-data mt-2 flex justify-between">
                   <span>SRC: {alert.source_ip || 'UNKNOWN'}</span>
-                  <span>{new Date(alert.timestamp).toLocaleTimeString()}</span>
+                  <span>{new Date(alert.timestamp).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>
                 </div>
               </div>
             ))}

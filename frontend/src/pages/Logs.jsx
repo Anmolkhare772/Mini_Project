@@ -7,8 +7,12 @@ const Logs = () => {
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   
   // Filters
-  const [status, setStatus] = useState('');
   const [eventType, setEventType] = useState('');
+
+  // Manual Log Analyzer state
+  const [rawLog, setRawLog] = useState('');
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
 
   const fetchLogs = async (page = 1) => {
     setLoading(true);
@@ -31,11 +35,34 @@ const Logs = () => {
 
   useEffect(() => {
     fetchLogs(1);
+    // Auto-refresh logs every 5 seconds to show new entries
+    const interval = setInterval(() => fetchLogs(pagination.page), 5000);
+    return () => clearInterval(interval);
   }, [status, eventType]);
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= pagination.pages) {
       fetchLogs(newPage);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!rawLog.trim()) return;
+    setAnalysisLoading(true);
+    setAnalysisResult(null);
+    try {
+      const res = await api.post('/logs/raw', { raw_log: rawLog });
+      setAnalysisResult({
+        success: true,
+        alerts: res.data.alerts_triggered || []
+      });
+      setRawLog('');
+      fetchLogs(1); // Refresh logs table immediately
+    } catch (err) {
+      setAnalysisResult({ success: false, error: 'Analysis failed.' });
+      console.error(err);
+    } finally {
+      setAnalysisLoading(false);
     }
   };
 
@@ -46,7 +73,58 @@ const Logs = () => {
         <p className="text-xs text-on-surface-variant font-data mt-1 tracking-wider uppercase">Raw Event Telemetry</p>
       </div>
 
-      <div className="card flex-shrink-0 flex items-center justify-between gap-4 p-3 border-b-0 rounded-b-none bg-surface-container-low">
+      {/* Manual Analyzer Section */}
+      <div className="card space-y-3">
+        <h3 className="text-xs font-semibold text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
+           <span className="w-1.5 h-1.5 rounded-full bg-tertiary shadow-[0_0_6px_#00e57a]"></span>
+           Manual Log Analysis Module
+        </h3>
+        <div className="flex gap-4">
+          <textarea 
+            className="flex-1 bg-surface-container border border-white/10 text-on-surface text-sm rounded p-3 font-data focus:outline-none focus:border-primary resize-none placeholder:text-on-surface-variant/50"
+            rows="2"
+            placeholder="Paste raw log string here for instant detection engine analysis... (e.g. 'SSH login failure from 45.33.32.156')"
+            value={rawLog}
+            onChange={(e) => setRawLog(e.target.value)}
+          />
+          <button 
+            onClick={handleAnalyze}
+            disabled={analysisLoading || !rawLog.trim()}
+            className="btn-primary shrink-0 px-6 font-semibold disabled:opacity-50"
+          >
+            {analysisLoading ? 'Scanning...' : 'Detect Threats'}
+          </button>
+        </div>
+        
+        {/* Analysis Result Feedback */}
+        {analysisResult && (
+          <div className="p-3 rounded border font-data text-xs flex flex-col gap-2 animate-in fade-in zoom-in duration-300">
+             {analysisResult.success ? (
+               analysisResult.alerts.length > 0 ? (
+                 <div className="bg-error/10 border-error/20 text-error p-3 rounded border">
+                   <div className="font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                     <span className="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+                     🚨 THREAT DETECTED!
+                   </div>
+                   <ul className="list-disc pl-5 space-y-1">
+                     {analysisResult.alerts.map((a, i) => (
+                       <li key={i}>{a.description} (Severity: {a.severity})</li>
+                     ))}
+                   </ul>
+                 </div>
+               ) : (
+                 <div className="bg-tertiary/10 border-tertiary/20 text-tertiary p-3 rounded border flex items-center gap-2 font-bold uppercase tracking-wider">
+                   <span className="text-lg">✅</span> Clean: No known signatures detected in this payload.
+                 </div>
+               )
+             ) : (
+               <div className="text-error">{analysisResult.error}</div>
+             )}
+          </div>
+        )}
+      </div>
+
+      <div className="card flex-shrink-0 flex items-center justify-between gap-4 p-3 border-b-0 rounded-b-none bg-surface-container-low mt-4">
         <div className="flex gap-3">
           <select 
             className="bg-surface border border-white/10 text-on-surface text-sm rounded px-3 py-1.5 font-body focus:outline-none focus:border-primary placeholder:text-on-surface-variant/50 cursor-pointer"
@@ -76,7 +154,7 @@ const Logs = () => {
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead className="sticky top-0 bg-surface-container border-b border-white/10 z-10 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
             <tr>
-              <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest whitespace-nowrap">Timestamp (UTC)</th>
+              <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest whitespace-nowrap">Date & Time</th>
               <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Source IP</th>
               <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Event Type</th>
               <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Status</th>
@@ -91,7 +169,7 @@ const Logs = () => {
             ) : (
               logs.map((log) => (
                 <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="px-4 py-3 text-on-surface-variant whitespace-nowrap">{new Date(log.timestamp).toISOString().replace('T', ' ').substring(0, 19)}</td>
+                  <td className="px-4 py-3 text-on-surface-variant whitespace-nowrap">{new Date(log.timestamp).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</td>
                   <td className="px-4 py-3 text-primary">{log.ip_address}</td>
                   <td className="px-4 py-3 text-on-surface truncate max-w-[150px]">{log.event_type}</td>
                   <td className="px-4 py-3">

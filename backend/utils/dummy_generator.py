@@ -103,10 +103,60 @@ def generate_background_logs(app):
                 print(f"Error in background log generation: {e}")
                 time.sleep(10)
 
+def tail_logs_file(app):
+    """
+    Tails the local logs.txt file and ingests new lines into the database
+    so they appear on the dashboard in real-time.
+    """
+    import os
+    log_path = r"C:\Users\anmol\OneDrive\Desktop\Cyber_Shield\backend\logs.txt"
+    if not os.path.exists(log_path):
+        open(log_path, 'a').close()
+
+    with app.app_context():
+        with open(log_path, "r", encoding='utf-8') as file:
+            # Go to the end of the file to only ingest NEW logs, or start from beginning?
+            # Let's start from end to simulate typical tail behavior
+            file.seek(0, 2)
+            while True:
+                line = file.readline()
+                if not line:
+                    time.sleep(1)
+                    continue
+                
+                # Ingest the log
+                try:
+                    # simple parsing: assume format is raw text, IP might be inside
+                    ip = "Unknown IP"
+                    import re
+                    ip_match = re.search(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', line)
+                    if ip_match:
+                        ip = ip_match.group(0)
+
+                    log = Log(
+                        timestamp=datetime.now(timezone.utc),
+                        ip_address=ip,
+                        event_type="File Ingestion",
+                        status="success", # default
+                        details=line.strip()
+                    )
+                    db.session.add(log)
+                    db.session.commit()
+                    
+                    # Instantly run detection so dashboard sees it!
+                    run_detection()
+                except Exception as e:
+                    print(f"Error ingesting log line: {e}")
+
 def start_background_generator(app):
     """
-    Starts the log generator in a background thread.
+    Starts the log generator and file tailer in background threads.
     """
     thread = threading.Thread(target=generate_background_logs, args=(app,), daemon=True)
     thread.start()
-    print("Background log generator started.")
+    
+    tailer = threading.Thread(target=tail_logs_file, args=(app,), daemon=True)
+    tailer.start()
+    
+    print("Background log generator and external file monitor started.")
+

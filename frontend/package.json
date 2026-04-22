@@ -11,11 +11,17 @@
   },
   "dependencies": {
     "axios": "^1.13.6",
+    "d3-geo": "^3.1.1",
     "lucide-react": "^1.7.0",
+    "prop-types": "^15.8.1",
     "react": "^19.2.4",
+    "react-countup": "^6.5.3",
     "react-dom": "^19.2.4",
+    "react-is": "^19.2.4",
     "react-router-dom": "^7.13.2",
-    "recharts": "^3.8.1"
+    "react-simple-maps": "^3.0.0",
+    "recharts": "^3.8.1",
+    "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

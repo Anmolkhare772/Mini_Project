@@ -63,7 +63,7 @@ const Alerts = () => {
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead className="sticky top-0 bg-surface-container border-b border-white/10 z-10 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
             <tr>
-              <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Time</th>
+              <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Date & Time</th>
               <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Severity</th>
               <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Trigger Type</th>
               <th className="px-4 py-3 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Source IP</th>
@@ -78,7 +78,7 @@ const Alerts = () => {
             ) : (
               alerts.map((alert) => (
                 <tr key={alert.id} className="hover:bg-white/[0.02] transition-colors group">
-                  <td className="px-4 py-3.5 text-on-surface-variant whitespace-nowrap">{new Date(alert.timestamp).toISOString().replace('T', ' ').substring(0, 19)}</td>
+                  <td className="px-4 py-3.5 text-on-surface-variant whitespace-nowrap">{new Date(alert.timestamp).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</td>
                   <td className="px-4 py-3.5"><AlertBadge severity={alert.severity} /></td>
                   <td className="px-4 py-3.5 text-on-surface font-semibold truncate max-w-[150px]">{alert.alert_type.replace(/_/g, ' ')}</td>
                   <td className="px-4 py-3.5 text-primary group-hover:text-white transition-colors">{alert.source_ip || '-'}</td>

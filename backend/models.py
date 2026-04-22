@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -64,3 +65,16 @@ class Alert(db.Model):
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
             "is_read": self.is_read,
         }
+
+
+class IngestedFile(db.Model):
+    """Tracks S3 keys already ingested to prevent duplicate log entries."""
+    __tablename__ = "ingested_files"
+
+    id = db.Column(db.Integer, primary_key=True)
+    s3_key = db.Column(db.String(512), unique=True, nullable=False, index=True)
+    ingested_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    log_count = db.Column(db.Integer, default=0)
+
+    def __repr__(self):
+        return f"<IngestedFile {self.s3_key}>"
