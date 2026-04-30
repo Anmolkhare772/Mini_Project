@@ -5,7 +5,7 @@ const Home = () => {
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center text-center p-6 relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,209,255,0.1)_0%,transparent_50%)] pointer-events-none"></div>
       
-      <div className="max-w-3xl glass z-10 p-12 rounded-xl border border-primary/20 shadow-[0_0_80px_rgba(0,209,255,0.1)]">
+      <div className="max-w-3xl glass z-10 p-12 rounded-xl border border-primary shadow-[0_0_80px_rgba(0,209,255,0.1)]">
         <h1 className="text-5xl md:text-6xl font-display font-bold text-on-surface mb-6 tracking-tighter shadow-glow-primary">
           CyberShield <span className="text-primary">Sentinel</span>
         </h1>

@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
+from datetime import datetime, timedelta, timezone
 from models import db, Log, Alert
 from sqlalchemy import func
 
@@ -23,14 +24,14 @@ def dashboard_stats():
     unique_ips = db.session.query(func.count(func.distinct(Alert.source_ip))).scalar() or 0
 
     # Attacks over time (last 24 hours, grouped by hour)
-    from datetime import datetime, timedelta, timezone
+
     since = datetime.now(timezone.utc) - timedelta(hours=24)
     timeline_raw = db.session.query(
-        func.strftime('%Y-%m-%d %H:00', Alert.timestamp),
-        func.count(Alert.id)
-    ).filter(Alert.timestamp >= since).group_by(
-        func.strftime('%Y-%m-%d %H:00', Alert.timestamp)
-    ).order_by(func.strftime('%Y-%m-%d %H:00', Alert.timestamp)).all()
+        func.strftime('%Y-%m-%d %H:00', Log.timestamp),
+        func.count(Log.id)
+    ).filter(Log.timestamp >= since).group_by(
+        func.strftime('%Y-%m-%d %H:00', Log.timestamp)
+    ).order_by(func.strftime('%Y-%m-%d %H:00', Log.timestamp)).all()
     timeline = [{"time": t, "count": c} for t, c in timeline_raw]
 
     # Threat type distribution

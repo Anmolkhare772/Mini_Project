@@ -36,6 +36,21 @@ Cyber_Shield/
 3. Launch the Vite dev server: `npm run dev`
 *(The UI will be accessible at http://localhost:5173/)*
 
+### 3. Cloud Analytics (AWS Kinesis Firehose)
+CyberShield supports real-time streaming of alerts and logs directly into an AWS Kinesis Firehose delivery stream for cloud-scale analytics and data warehousing.
+
+To enable this:
+1. Ensure `boto3` is installed in your backend virtual environment.
+2. Update your `backend/.env` file:
+   ```env
+   CLOUD_ANALYTICS_ENABLED=true
+   CLOUD_ANALYTICS_STREAM=your-firehose-stream-name
+   AWS_ACCESS_KEY_ID=your-aws-key
+   AWS_SECRET_ACCESS_KEY=your-aws-secret
+   AWS_DEFAULT_REGION=us-east-1
+   ```
+3. Whenever an Alert or Log is created, a JSON payload is safely streamed to the Firehose destination asynchronously without blocking application operations.
+
 ---
 
 *Academic Project | GLA University | B.Tech CSE 2024-25*

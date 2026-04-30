@@ -35,10 +35,6 @@ ATTACK_LOGS = [
      "details": "failed login attempt on admin account, brute force detected"},
     {"ip": "45.33.32.156",   "event": "SSH Authentication", "status": "failure",
      "details": "failed login attempt on admin account, brute force detected"},
-    {"ip": "45.33.32.156",   "event": "SSH Authentication", "status": "failure",
-     "details": "failed login attempt on admin account, brute force detected"},
-    {"ip": "45.33.32.156",   "event": "SSH Authentication", "status": "failure",
-     "details": "failed login attempt on admin account, brute force detected"},
     {"ip": "198.51.100.23",  "event": "HTTP Request",       "status": "failure",
      "details": "POST /login payload: ' OR 1=1 -- SQL injection attempt detected"},
     {"ip": "198.51.100.23",  "event": "HTTP Request",       "status": "failure",
@@ -68,13 +64,7 @@ ATTACK_LOGS = [
     {"ip": "5.188.206.14",   "event": "SYN Flood",          "status": "failure",
      "details": "DDoS SYN flood attack detected on port 80"},
     {"ip": "203.0.113.99",   "event": "HTTP Request",       "status": "failure",
-     "details": "Directory traversal: GET /../../../../etc/passwd HTTP/1.1"},
-    {"ip": "192.168.1.10",   "event": "HTTP Connection",    "status": "success",
-     "details": "Normal HTTP request from internal network"},
-    {"ip": "192.168.1.22",   "event": "SSH Connection",     "status": "success",
-     "details": "Authorized SSH session established for user anmol"},
-    {"ip": "10.0.0.5",       "event": "Database Backup",    "status": "success",
-     "details": "Scheduled database backup completed successfully"},
+     "details": "Directory traversal: GET /../../../../etc/passwd HTTP/1.1"}
 ]
 
 
@@ -143,13 +133,12 @@ def simulate():
 
     print()
     print("Attack types simulated:")
-    print("  - SSH Brute Force     (7 failed login attempts)")
+    print("  - SSH Brute Force     (5 failed login attempts)")
     print("  - SQL Injection       (3 payloads)")
     print("  - Port Scanning       (7 service probes)")
     print("  - XSS Attack          (2 payloads)")
     print("  - DDoS / SYN Flood    (2 signatures)")
     print("  - Directory Traversal (1 payload)")
-    print("  - Normal traffic      (3 clean entries)")
     print()
     print("To view logs on AWS CloudWatch:")
     print(f"  console.aws.amazon.com -> CloudWatch -> Log Groups -> {CW_LOG_GROUP}")

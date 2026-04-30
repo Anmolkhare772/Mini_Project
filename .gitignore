@@ -20,3 +20,9 @@ Thumbs.db
 
 # Environment Variables
 .env
+
+# Scratch and Utilities
+**/scratch/
+sync_db.py
+check_routes.py
+seed_settings.py

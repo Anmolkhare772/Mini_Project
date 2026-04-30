@@ -1,0 +1,169 @@
+﻿
+C:\Users\anmol\OneDrive\Desktop\Cyber_Shield\frontend\src\components\LiveThreatMap.jsx
+  25:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  23 |         severity: a.severity
+  24 |       }));
+> 25 |     setMarkers(initialMarkers.slice(0, 20));
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |
+  27 |     const handleNewAlert = (alert) => {
+  28 |       if (alert.lat && alert.lon) {  react-hooks/set-state-in-effect
+
+C:\Users\anmol\OneDrive\Desktop\Cyber_Shield\frontend\src\components\Sidebar.jsx
+   8:32  error  'Icon' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  43:8   error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  41 |       
+  42 |       <div className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest px-5 py-2">Monitor</div>
+> 43 |       <NavItem to="/dashboard" icon={LayoutDashboard} label="Overview" />
+     |        ^^^^^^^ This component is created during render
+  44 |       <NavItem to="/alerts" icon={AlertCircle} label="Alerts" />
+  45 |       
+  46 |       <div className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest px-5 py-2 mt-4">Analysis</div>
+
+   6 |   const currentPath = location.pathname;
+   7 |
+>  8 |   const NavItem = ({ to, icon: Icon, label, badge }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 |     const isActive = currentPath === to;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 10 |     return (
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |   };
+     | ^^^^ The component is created during render here
+  29 |
+  30 |   return (
+  31 |     <div className="w-64 bg-surface-container-low border-r border-white/5 flex flex-col pt-4 overflow-y-auto">                                                            react-hooks/static-components
+  44:8   error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  42 |       <div className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest px-5 py-2">Monitor</div>
+  43 |       <NavItem to="/dashboard" icon={LayoutDashboard} label="Overview" />
+> 44 |       <NavItem to="/alerts" icon={AlertCircle} label="Alerts" />
+     |        ^^^^^^^ This component is created during render
+  45 |       
+  46 |       <div className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest px-5 py-2 mt-4">Analysis</div>
+  47 |       <NavItem to="/logs" icon={Database} label="System Logs" />
+
+   6 |   const currentPath = location.pathname;
+   7 |
+>  8 |   const NavItem = ({ to, icon: Icon, label, badge }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 |     const isActive = currentPath === to;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 10 |     return (
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |   };
+     | ^^^^ The component is created during render here
+  29 |
+  30 |   return (
+  31 |     <div className="w-64 bg-surface-container-low border-r border-white/5 flex flex-col pt-4 overflow-y-auto">  react-hooks/static-components
+  47:8   error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  45 |       
+  46 |       <div className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest px-5 py-2 mt-4">Analysis</div>
+> 47 |       <NavItem to="/logs" icon={Database} label="System Logs" />
+     |        ^^^^^^^ This component is created during render
+  48 |       
+  49 |       <div className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest px-5 py-2 mt-4">System</div>
+  50 |       <NavItem to="/profile" icon={Users} label="Profile" />
+
+   6 |   const currentPath = location.pathname;
+   7 |
+>  8 |   const NavItem = ({ to, icon: Icon, label, badge }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 |     const isActive = currentPath === to;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 10 |     return (
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |   };
+     | ^^^^ The component is created during render here
+  29 |
+  30 |   return (
+  31 |     <div className="w-64 bg-surface-container-low border-r border-white/5 flex flex-col pt-4 overflow-y-auto">                                                                     react-hooks/static-components
+  50:8   error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  48 |       
+  49 |       <div className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest px-5 py-2 mt-4">System</div>
+> 50 |       <NavItem to="/profile" icon={Users} label="Profile" />
+     |        ^^^^^^^ This component is created during render
+  51 |       <NavItem to="/settings" icon={SettingsIcon} label="Settings" />
+  52 |
+  53 |       <div className="mt-auto px-5 py-4 border-t border-white/5">
+
+   6 |   const currentPath = location.pathname;
+   7 |
+>  8 |   const NavItem = ({ to, icon: Icon, label, badge }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 |     const isActive = currentPath === to;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 10 |     return (
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |   };
+     | ^^^^ The component is created during render here
+  29 |
+  30 |   return (
+  31 |     <div className="w-64 bg-surface-container-low border-r border-white/5 flex flex-col pt-4 overflow-y-auto">                                                                                                                                      react-hooks/static-components
+  51:8   error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  49 |       <div className="text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest px-5 py-2 mt-4">System</div>
+  50 |       <NavItem to="/profile" icon={Users} label="Profile" />
+> 51 |       <NavItem to="/settings" icon={SettingsIcon} label="Settings" />
+     |        ^^^^^^^ This component is created during render
+  52 |
+  53 |       <div className="mt-auto px-5 py-4 border-t border-white/5">
+  54 |         <p className="text-[10px] text-on-surface-variant leading-relaxed">
+
+   6 |   const currentPath = location.pathname;
+   7 |
+>  8 |   const NavItem = ({ to, icon: Icon, label, badge }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  9 |     const isActive = currentPath === to;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 10 |     return (
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |   };
+     | ^^^^ The component is created during render here
+  29 |
+  30 |   return (
+  31 |     <div className="w-64 bg-surface-container-low border-r border-white/5 flex flex-col pt-4 overflow-y-auto">                                                                 react-hooks/static-components
+
+C:\Users\anmol\OneDrive\Desktop\Cyber_Shield\frontend\src\pages\Alerts.jsx
+  53:6  warning  React Hook useEffect has a missing dependency: 'fetchAlerts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\anmol\OneDrive\Desktop\Cyber_Shield\frontend\src\pages\Logs.jsx
+  45:6  warning  React Hook useEffect has a missing dependency: 'fetchLogs'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Γ£û 9 problems (7 errors, 2 warnings)
+

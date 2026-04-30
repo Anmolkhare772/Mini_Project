@@ -1,8 +1,16 @@
 from datetime import datetime, timezone
-
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import event
 
 db = SQLAlchemy()
+
+# Import analytics helper (creates Kinesis client lazily)
+try:
+    from backend.services.analytics import publish_event
+except ImportError:
+    # Fallback stub if analytics module missing
+    def publish_event(event_type, payload):
+        pass
 
 
 class User(db.Model):
@@ -12,6 +20,7 @@ class User(db.Model):
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password = db.Column(db.String(255), nullable=False)
+    phone = db.Column(db.String(20), nullable=True) # User's mobile for SMS alerts
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
@@ -19,7 +28,8 @@ class User(db.Model):
             "id": self.id,
             "name": self.name,
             "email": self.email,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "phone": self.phone,
+            "created_at": self.created_at.isoformat() + "Z" if self.created_at else None,
         }
 
 
@@ -36,7 +46,7 @@ class Log(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "timestamp": self.timestamp.isoformat() + "Z" if self.timestamp else None,
             "ip_address": self.ip_address,
             "event_type": self.event_type,
             "status": self.status,
@@ -62,7 +72,7 @@ class Alert(db.Model):
             "severity": self.severity,
             "description": self.description,
             "source_ip": self.source_ip,
-            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "timestamp": self.timestamp.isoformat() + "Z" if self.timestamp else None,
             "is_read": self.is_read,
         }
 
@@ -78,3 +88,70 @@ class IngestedFile(db.Model):
 
     def __repr__(self):
         return f"<IngestedFile {self.s3_key}>"
+
+
+class SystemSettings(db.Model):
+    __tablename__ = "system_settings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    brute_force_threshold = db.Column(db.Integer, default=5)
+    port_scan_threshold = db.Column(db.Integer, default=10)
+    email_notifications = db.Column(db.Boolean, default=False)
+    sms_notifications = db.Column(db.Boolean, default=False)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            "brute_force_threshold": self.brute_force_threshold,
+            "port_scan_threshold": self.port_scan_threshold,
+            "email_notifications": self.email_notifications,
+            "sms_notifications": self.sms_notifications,
+            "updated_at": self.updated_at.isoformat() + "Z" if self.updated_at else None,
+        }
+
+    @staticmethod
+    def get_settings():
+        settings = SystemSettings.query.first()
+        if not settings:
+            settings = SystemSettings()
+            db.session.add(settings)
+            db.session.commit()
+        return settings
+
+# -------------------------------------------------
+# SQLAlchemy event listeners to push data to cloud analytics
+# -------------------------------------------------
+
+def _after_insert_log(mapper, connection, target):
+    """Called after a Log record is inserted.
+    Publishes the log data to the configured analytics stream.
+    """
+    payload = {
+        "id": target.id,
+        "timestamp": target.timestamp.isoformat() + "Z" if target.timestamp else None,
+        "ip_address": target.ip_address,
+        "event_type": target.event_type,
+        "status": target.status,
+        "details": target.details,
+    }
+    publish_event("log", payload)
+
+
+def _after_insert_alert(mapper, connection, target):
+    """Called after an Alert record is inserted.
+    Publishes the alert data to the analytics stream.
+    """
+    payload = {
+        "id": target.id,
+        "alert_type": target.alert_type,
+        "severity": target.severity,
+        "description": target.description,
+        "source_ip": target.source_ip,
+        "timestamp": target.timestamp.isoformat() + "Z" if target.timestamp else None,
+        "is_read": target.is_read,
+    }
+    publish_event("alert", payload)
+
+# Attach listeners to the Log and Alert models
+event.listen(Log, "after_insert", _after_insert_log)
+event.listen(Alert, "after_insert", _after_insert_alert)

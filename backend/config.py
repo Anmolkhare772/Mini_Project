@@ -10,7 +10,14 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "cybershield-super-secret-key-2025")
-    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, "app.db")
+    
+    # 🗄️ Database Configuration (SQLite default, PostgreSQL for Prod)
+    _db_url = os.environ.get("DATABASE_URL")
+    if _db_url and _db_url.startswith("postgres://"):
+        # Fix for Heroku/older AWS versions which use 'postgres://' instead of 'postgresql://'
+        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+    
+    SQLALCHEMY_DATABASE_URI = _db_url or ("sqlite:///" + os.path.join(BASE_DIR, "app.db"))
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "jwt-cybershield-secret-2025")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)

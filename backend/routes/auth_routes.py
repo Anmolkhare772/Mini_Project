@@ -13,6 +13,7 @@ def register():
     name = data.get("name", "").strip()
     email = data.get("email", "").strip().lower()
     password = data.get("password", "")
+    phone = data.get("phone", "").strip()
 
     if not name or not email or not password:
         return jsonify({"error": "Name, email and password are required"}), 400
@@ -24,7 +25,7 @@ def register():
         return jsonify({"error": "Email already registered"}), 409
 
     hashed = bcrypt.generate_password_hash(password).decode("utf-8")
-    user = User(name=name, email=email, password=hashed)
+    user = User(name=name, email=email, password=hashed, phone=phone)
     db.session.add(user)
     db.session.commit()
 

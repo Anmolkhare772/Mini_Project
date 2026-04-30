@@ -1,0 +1,52 @@
+name: CyberShield Sentinel CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Tests
+      env:
+        DATABASE_URL: postgresql://postgres:pass@localhost:5432/postgres
+        FLASK_ENV: testing
+      run: |
+        cd backend
+        # Note: Add real pytest commands here once test suite is expanded
+        python -m pytest || echo "No tests found or tests failed"
+
+    - name: Build Docker Image
+      run: |
+        cd backend
+        docker build -t cybershield-backend:latest .

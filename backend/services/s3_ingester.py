@@ -2,7 +2,10 @@ import time
 import json
 import re
 import threading
+import logging
 from datetime import datetime, timezone
+
+logger = logging.getLogger("cybershield")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # S3 Ingester Service
@@ -46,6 +49,7 @@ def _parse_log_line(line: str):
             "event_type": data.get("event", data.get("event_type", "CloudWatch Log")),
             "status":     data.get("status", "success"),
             "details":    data.get("details", data.get("message", line[:500])),
+            "timestamp":  data.get("timestamp")
         }
     except (json.JSONDecodeError, ValueError):
         # Plain text fallback
@@ -72,7 +76,7 @@ def ingest_from_s3(app):
     prefix = app.config.get("S3_KEY_PREFIX", "logs/")
 
     if not bucket:
-        print("[WARN] S3_BUCKET_NAME not set -- skipping S3 ingestion.")
+        logger.warning("S3_BUCKET_NAME not set -- skipping S3 ingestion.")
         return 0
 
     with _lock:
@@ -93,7 +97,7 @@ def ingest_from_s3(app):
                     if IngestedFile.query.filter_by(s3_key=key).first():
                         continue
 
-                    print(f"[S3] Ingesting new file: {key}")
+                    logger.info(f"Ingesting new S3 file: {key}")
 
                     # Download the file content
                     response = s3.get_object(Bucket=bucket, Key=key)
@@ -105,8 +109,20 @@ def ingest_from_s3(app):
                         parsed = _parse_log_line(line)
                         if not parsed:
                             continue
+                        # Parse timestamp from log if available, otherwise use now
+                        log_ts = None
+                        if parsed.get("timestamp"):
+                            try:
+                                # Handle ISO format from simulate_attack.py
+                                log_ts = datetime.fromisoformat(parsed["timestamp"].replace('Z', '+00:00')).replace(tzinfo=None)
+                            except:
+                                pass
+                        
+                        if not log_ts:
+                            log_ts = datetime.now(timezone.utc).replace(tzinfo=None)
+
                         log = Log(
-                            timestamp=datetime.now(timezone.utc),
+                            timestamp=log_ts,
                             ip_address=parsed["ip_address"],
                             event_type=parsed["event_type"],
                             status=parsed["status"],
@@ -116,22 +132,22 @@ def ingest_from_s3(app):
                         lines_inserted += 1
 
                     # Mark file as ingested
-                    ingested = IngestedFile(s3_key=key, log_count=lines_inserted)
+                    ingested = IngestedFile(s3_key=key, log_count=lines_inserted, ingested_at=datetime.now(timezone.utc).replace(tzinfo=None))
                     db.session.add(ingested)
                     db.session.commit()
 
                     new_log_count += lines_inserted
-                    print(f"  [OK] {lines_inserted} logs inserted from {key}")
+                    logger.info(f"S3 ingestion successful: {lines_inserted} logs from {key}")
 
             # Run detection once after all new logs are in
             if new_log_count > 0:
                 alerts = run_detection()
-                print(f"  [ALERT] Detection complete: {len(alerts)} new alert(s)")
+                logger.info(f"Detection complete: {len(alerts)} new alert(s)")
 
             return new_log_count
 
         except Exception as e:
-            print(f"[ERROR] S3 ingestion error: {e}")
+            logger.error(f"S3 ingestion error: {e}")
             db.session.rollback()
             return 0
 
@@ -143,8 +159,7 @@ def start_s3_poller(app):
     """
     def _poll_loop():
         with app.app_context():
-            print(f"[S3] Poller started -- polling every {POLL_INTERVAL}s "
-                  f"(bucket: {app.config.get('S3_BUCKET_NAME', 'NOT SET')})")
+            logger.info(f"S3 Poller started (bucket: {app.config.get('S3_BUCKET_NAME', 'NOT SET')})")
             while True:
                 ingest_from_s3(app)
                 time.sleep(POLL_INTERVAL)

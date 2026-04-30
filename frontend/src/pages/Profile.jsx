@@ -31,15 +31,15 @@ const Profile = () => {
           <div className="text-on-surface-variant font-data animate-pulse">Scanning Bio-Metrics...</div>
         ) : profile ? (
           <div className="space-y-6">
-            <div className="flex items-center gap-6 pb-6 border-b border-white/5">
-              <div className="w-20 h-20 rounded bg-surface-container-high border border-primary/30 flex items-center justify-center shadow-glow-primary">
+            <div className="flex items-center gap-6 pb-6 border-b border-white">
+              <div className="w-20 h-20 rounded bg-surface-container-high border border-primary flex items-center justify-center shadow-glow-primary">
                 <span className="text-3xl font-display font-bold text-primary">
                   {profile.name?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div>
                 <h3 className="text-xl font-display font-medium text-on-surface">{profile.name}</h3>
-                <div className="text-xs font-data text-primary mt-1 px-2 py-0.5 bg-primary/10 border border-primary/20 rounded inline-block">
+                <div className="text-xs font-data text-primary mt-1 px-2 py-0.5 bg-primary border border-primary rounded inline-block">
                   ACTIVE CLEARANCE LEVEL 4
                 </div>
               </div>

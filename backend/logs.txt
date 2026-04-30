@@ -1,0 +1,8 @@
+User login successful from 192.168.1.10
+User login failed from 45.33.32.156 
+Database backup completed successfully
+Suspicious SQL payload detected: SELECT * FROM users WHERE '1'='1'
+Port scan detected from 198.51.100.23
+Normal user activity on /dashboard
+Multiple failed login attempts from 91.195.240.117
+DDoS attack signature matched from botnet
