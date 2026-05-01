@@ -120,7 +120,9 @@ def load_kaggle_attacks():
     """Loads a random sample of attacks from the Kaggle UNSW-NB15 dataset."""
     import pandas as pd
     import numpy as np
-    dataset_path = 'ml_engine/datasets/security_dataset.csv'
+    # Use absolute path relative to the script location
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    dataset_path = os.path.join(base_dir, 'ml_engine', 'datasets', 'security_dataset.csv')
     
     if not os.path.exists(dataset_path):
         print(f"[!] Dataset not found at {dataset_path}. Falling back to hardcoded logs.")
@@ -135,7 +137,7 @@ def load_kaggle_attacks():
             'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'is_ftp_login', 'ct_ftp_cmd', 'ct_flw_http_mthd', 
             'ct_src_ltm', 'ct_srv_dst', 'is_sm_ips_ports', 'attack_cat', 'label'
         ]
-        df = pd.read_csv(dataset_path, names=columns)
+        df = pd.read_csv(dataset_path, names=columns, header=0, low_memory=False)
         
         # Filter only actual attacks (label == 1) and take a random sample
         attacks_df = df[df['label'] == 1].sample(n=30, replace=True)

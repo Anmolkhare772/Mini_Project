@@ -4,8 +4,9 @@ from models import db, Log, Alert, SystemSettings
 from flask import current_app
 from services.notification_service import dispatch_alert
 
-# Load ML Models
-MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ml_engine', 'models')
+# Setup model paths
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_DIR = os.path.join(BASE_DIR, 'ml_engine', 'models')
 RF_MODEL_PATH = os.path.join(MODEL_DIR, 'rf_classifier.pkl')
 IF_MODEL_PATH = os.path.join(MODEL_DIR, 'isolation_forest.pkl')
 

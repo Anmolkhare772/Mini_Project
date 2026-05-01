@@ -119,7 +119,9 @@ def train_threat_classifier(df):
     print(classification_report(y_test, y_pred))
     print(f"Accuracy: {accuracy_score(y_test, y_pred) * 100:.2f}%")
     
-    model_path = 'backend/ml_engine/models/rf_classifier.pkl'
+    model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
+    os.makedirs(model_dir, exist_ok=True)
+    model_path = os.path.join(model_dir, 'rf_classifier.pkl')
     joblib.dump(clf, model_path)
     print(f"Saved Threat Classifier to {model_path}")
     return clf
@@ -146,7 +148,9 @@ def train_anomaly_detector(df):
     
     iso_forest.fit(normal_data)
     
-    model_path = 'backend/ml_engine/models/isolation_forest.pkl'
+    model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
+    os.makedirs(model_dir, exist_ok=True)
+    model_path = os.path.join(model_dir, 'isolation_forest.pkl')
     joblib.dump(iso_forest, model_path)
     print(f"Saved Anomaly Detector to {model_path}")
     return iso_forest
@@ -155,9 +159,12 @@ def load_professional_dataset():
     """
     Loads and pre-processes the UNSW-NB15 professional dataset.
     """
-    dataset_path = 'backend/ml_engine/datasets/security_dataset.csv'
+    # Use absolute path relative to the script location
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dataset_path = os.path.join(base_dir, 'ml_engine', 'datasets', 'security_dataset.csv')
+    
     if not os.path.exists(dataset_path):
-        print("[!] Professional dataset not found. Using synthetic data.")
+        print(f"[!] Professional dataset not found at {dataset_path}. Using synthetic data.")
         return generate_synthetic_data(num_samples=2000)
 
     print(f"Loading professional dataset: {dataset_path}")
@@ -172,7 +179,7 @@ def load_professional_dataset():
         'ct_src_ltm', 'ct_srv_dst', 'is_sm_ips_ports', 'attack_cat', 'label'
     ]
     
-    df_raw = pd.read_csv(dataset_path, names=columns)
+    df_raw = pd.read_csv(dataset_path, names=columns, header=0, low_memory=False)
     
     # Map professional features to Trinetra Sentinel features
     # We combine technical features into the 'details' text field for TF-IDF analysis
@@ -181,7 +188,6 @@ def load_professional_dataset():
         "Proto: " + df_raw['proto'].astype(str) + 
         " | Service: " + df_raw['service'].astype(str) + 
         " | State: " + df_raw['state'].astype(str) + 
-        " | Attack: " + df_raw['attack_cat'].astype(str) + 
         " | Pkts: " + df_raw['spkts'].astype(str)
     )
     
