@@ -15,7 +15,7 @@ export default function HowItWorks() {
   const steps = [
     { icon: Database, title: "CloudWatch", desc: "Logs Ingested", active: false },
     { icon: Zap, title: "Lambda/S3", desc: "Data Processing", active: false },
-    { icon: Cpu, title: "ML Engine", desc: "Threat Detection", active: true },
+    { icon: Cpu, title: "ML Engine", desc: "Threat Detection", active: false },
     { icon: Layout, title: "Dashboard", desc: "Visual Alerts", active: false }
   ];
 

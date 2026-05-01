@@ -26,3 +26,10 @@ Thumbs.db
 sync_db.py
 check_routes.py
 seed_settings.py
+server_logs.txt
+
+# Local Database Data
+mongodb_data/
+
+# Datasets
+backend/ml_engine/datasets/

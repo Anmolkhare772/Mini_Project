@@ -69,7 +69,7 @@ def ingest_from_s3(app):
     /api/logs/sync endpoint.
     Returns the count of new logs inserted.
     """
-    from models import db, Log, IngestedFile
+    from models import Log, IngestedFile
     from services.detection_engine import run_detection
 
     bucket = app.config.get("S3_BUCKET_NAME")
@@ -94,7 +94,7 @@ def ingest_from_s3(app):
                     key = obj["Key"]
 
                     # Skip if already ingested
-                    if IngestedFile.query.filter_by(s3_key=key).first():
+                    if IngestedFile.objects(s3_key=key).first():
                         continue
 
                     logger.info(f"Ingesting new S3 file: {key}")
@@ -119,7 +119,7 @@ def ingest_from_s3(app):
                                 pass
                         
                         if not log_ts:
-                            log_ts = datetime.now(timezone.utc).replace(tzinfo=None)
+                            log_ts = datetime.now(timezone.utc)
 
                         log = Log(
                             timestamp=log_ts,
@@ -128,13 +128,12 @@ def ingest_from_s3(app):
                             status=parsed["status"],
                             details=parsed["details"],
                         )
-                        db.session.add(log)
+                        log.save()
                         lines_inserted += 1
 
                     # Mark file as ingested
-                    ingested = IngestedFile(s3_key=key, log_count=lines_inserted, ingested_at=datetime.now(timezone.utc).replace(tzinfo=None))
-                    db.session.add(ingested)
-                    db.session.commit()
+                    ingested = IngestedFile(s3_key=key, log_count=lines_inserted, ingested_at=datetime.now(timezone.utc))
+                    ingested.save()
 
                     new_log_count += lines_inserted
                     logger.info(f"S3 ingestion successful: {lines_inserted} logs from {key}")
@@ -148,7 +147,6 @@ def ingest_from_s3(app):
 
         except Exception as e:
             logger.error(f"S3 ingestion error: {e}")
-            db.session.rollback()
             return 0
 
 

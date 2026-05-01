@@ -19,6 +19,12 @@ class Config:
     
     SQLALCHEMY_DATABASE_URI = _db_url or ("sqlite:///" + os.path.join(BASE_DIR, "app.db"))
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # 🍃 MongoDB Configuration
+    MONGODB_SETTINGS = {
+        'host': os.environ.get("MONGODB_URI", "mongodb://localhost:27017/cybershield")
+    }
+
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "jwt-cybershield-secret-2025")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
 

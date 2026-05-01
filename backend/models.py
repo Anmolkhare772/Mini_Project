@@ -1,31 +1,41 @@
 from datetime import datetime, timezone
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import event
+from mongoengine import connect, Document, StringField, DateTimeField, IntField, BooleanField, signals
 
-db = SQLAlchemy()
+class MongoEngineMock:
+    def __init__(self):
+        self.Document = Document
+        self.StringField = StringField
+        self.DateTimeField = DateTimeField
+        self.IntField = IntField
+        self.BooleanField = BooleanField
+
+    def init_app(self, app):
+        # Initialize connection using the URI in config
+        connect(host=app.config['MONGODB_SETTINGS']['host'])
+
+db = MongoEngineMock()
 
 # Import analytics helper (creates Kinesis client lazily)
 try:
-    from backend.services.analytics import publish_event
+    from services.analytics import publish_event
 except ImportError:
     # Fallback stub if analytics module missing
     def publish_event(event_type, payload):
         pass
 
 
-class User(db.Model):
-    __tablename__ = "users"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password = db.Column(db.String(255), nullable=False)
-    phone = db.Column(db.String(20), nullable=True) # User's mobile for SMS alerts
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+class User(db.Document):
+    meta = {'collection': 'users'}
+    
+    name = db.StringField(required=True, max_length=120)
+    email = db.StringField(required=True, unique=True, max_length=120)
+    password = db.StringField(required=True, max_length=255)
+    phone = db.StringField(max_length=20) # User's mobile for SMS alerts
+    created_at = db.DateTimeField(default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": str(self.id),
             "name": self.name,
             "email": self.email,
             "phone": self.phone,
@@ -33,19 +43,18 @@ class User(db.Model):
         }
 
 
-class Log(db.Model):
-    __tablename__ = "logs"
+class Log(db.Document):
+    meta = {'collection': 'logs', 'indexes': ['timestamp', 'ip_address']}
 
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
-    ip_address = db.Column(db.String(45), nullable=False, index=True)
-    event_type = db.Column(db.String(80), nullable=False)
-    status = db.Column(db.String(20), nullable=False)  # success / failure
-    details = db.Column(db.Text, default="")
+    timestamp = db.DateTimeField(default=lambda: datetime.now(timezone.utc))
+    ip_address = db.StringField(required=True, max_length=45)
+    event_type = db.StringField(required=True, max_length=80)
+    status = db.StringField(required=True, max_length=20)  # success / failure
+    details = db.StringField(default="")
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": str(self.id),
             "timestamp": self.timestamp.isoformat() + "Z" if self.timestamp else None,
             "ip_address": self.ip_address,
             "event_type": self.event_type,
@@ -54,20 +63,19 @@ class Log(db.Model):
         }
 
 
-class Alert(db.Model):
-    __tablename__ = "alerts"
+class Alert(db.Document):
+    meta = {'collection': 'alerts', 'indexes': ['alert_type', 'severity', 'timestamp']}
 
-    id = db.Column(db.Integer, primary_key=True)
-    alert_type = db.Column(db.String(80), nullable=False, index=True)
-    severity = db.Column(db.String(20), nullable=False, index=True)  # low / medium / high / critical
-    description = db.Column(db.Text, nullable=False)
-    source_ip = db.Column(db.String(45), default="")
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
-    is_read = db.Column(db.Boolean, default=False)
+    alert_type = db.StringField(required=True, max_length=80)
+    severity = db.StringField(required=True, max_length=20)  # low / medium / high / critical
+    description = db.StringField(required=True)
+    source_ip = db.StringField(default="")
+    timestamp = db.DateTimeField(default=lambda: datetime.now(timezone.utc))
+    is_read = db.BooleanField(default=False)
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": str(self.id),
             "alert_type": self.alert_type,
             "severity": self.severity,
             "description": self.description,
@@ -77,28 +85,23 @@ class Alert(db.Model):
         }
 
 
-class IngestedFile(db.Model):
+class IngestedFile(db.Document):
     """Tracks S3 keys already ingested to prevent duplicate log entries."""
-    __tablename__ = "ingested_files"
+    meta = {'collection': 'ingested_files'}
 
-    id = db.Column(db.Integer, primary_key=True)
-    s3_key = db.Column(db.String(512), unique=True, nullable=False, index=True)
-    ingested_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    log_count = db.Column(db.Integer, default=0)
-
-    def __repr__(self):
-        return f"<IngestedFile {self.s3_key}>"
+    s3_key = db.StringField(required=True, unique=True, max_length=512)
+    ingested_at = db.DateTimeField(default=lambda: datetime.now(timezone.utc))
+    log_count = db.IntField(default=0)
 
 
-class SystemSettings(db.Model):
-    __tablename__ = "system_settings"
+class SystemSettings(db.Document):
+    meta = {'collection': 'system_settings'}
 
-    id = db.Column(db.Integer, primary_key=True)
-    brute_force_threshold = db.Column(db.Integer, default=5)
-    port_scan_threshold = db.Column(db.Integer, default=10)
-    email_notifications = db.Column(db.Boolean, default=False)
-    sms_notifications = db.Column(db.Boolean, default=False)
-    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    brute_force_threshold = db.IntField(default=5)
+    port_scan_threshold = db.IntField(default=10)
+    email_notifications = db.BooleanField(default=False)
+    sms_notifications = db.BooleanField(default=False)
+    updated_at = db.DateTimeField(default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
         return {
@@ -111,47 +114,24 @@ class SystemSettings(db.Model):
 
     @staticmethod
     def get_settings():
-        settings = SystemSettings.query.first()
+        settings = SystemSettings.objects.first()
         if not settings:
-            settings = SystemSettings()
-            db.session.add(settings)
-            db.session.commit()
+            settings = SystemSettings().save()
         return settings
 
 # -------------------------------------------------
-# SQLAlchemy event listeners to push data to cloud analytics
+# MongoEngine signals to push data to cloud analytics
 # -------------------------------------------------
 
-def _after_insert_log(mapper, connection, target):
-    """Called after a Log record is inserted.
-    Publishes the log data to the configured analytics stream.
-    """
-    payload = {
-        "id": target.id,
-        "timestamp": target.timestamp.isoformat() + "Z" if target.timestamp else None,
-        "ip_address": target.ip_address,
-        "event_type": target.event_type,
-        "status": target.status,
-        "details": target.details,
-    }
-    publish_event("log", payload)
+def _after_save_log(sender, document, **kwargs):
+    if kwargs.get('created', False):
+        payload = document.to_dict()
+        publish_event("log", payload)
 
+def _after_save_alert(sender, document, **kwargs):
+    if kwargs.get('created', False):
+        payload = document.to_dict()
+        publish_event("alert", payload)
 
-def _after_insert_alert(mapper, connection, target):
-    """Called after an Alert record is inserted.
-    Publishes the alert data to the analytics stream.
-    """
-    payload = {
-        "id": target.id,
-        "alert_type": target.alert_type,
-        "severity": target.severity,
-        "description": target.description,
-        "source_ip": target.source_ip,
-        "timestamp": target.timestamp.isoformat() + "Z" if target.timestamp else None,
-        "is_read": target.is_read,
-    }
-    publish_event("alert", payload)
-
-# Attach listeners to the Log and Alert models
-event.listen(Log, "after_insert", _after_insert_log)
-event.listen(Alert, "after_insert", _after_insert_alert)
+signals.post_save.connect(_after_save_log, sender=Log)
+signals.post_save.connect(_after_save_alert, sender=Alert)

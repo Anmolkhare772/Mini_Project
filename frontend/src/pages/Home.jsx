@@ -7,7 +7,7 @@ const Home = () => {
       
       <div className="max-w-3xl glass z-10 p-12 rounded-xl border border-primary shadow-[0_0_80px_rgba(0,209,255,0.1)]">
         <h1 className="text-5xl md:text-6xl font-display font-bold text-on-surface mb-6 tracking-tighter shadow-glow-primary">
-          CyberShield <span className="text-primary">Sentinel</span>
+          Trinetra <span className="text-primary">Sentinel</span>
         </h1>
         
         <p className="text-lg text-on-surface-variant mb-10 max-w-2xl mx-auto leading-relaxed">

@@ -20,7 +20,7 @@ try:
         rf_classifier = joblib.load(RF_MODEL_PATH)
         iso_forest = joblib.load(IF_MODEL_PATH)
         ML_ENABLED = True
-        print("[✔] Machine Learning Threat Detection Engine Loaded.")
+        print("[+] Trinetra ML Threat Detection Engine Loaded.")
 except ImportError:
     print("[!] pandas/joblib not installed. ML Engine disabled.")
 except Exception as e:
@@ -36,7 +36,7 @@ def run_detection():
     new_alerts = []
     since_time = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=5)
     
-    recent_logs = Log.query.filter(Log.timestamp >= since_time).all()
+    recent_logs = Log.objects(timestamp__gte=since_time)
     if not recent_logs:
         return new_alerts
 
@@ -76,10 +76,10 @@ def run_detection():
                 alert_type = "ML_THREAT_DETECTED" if is_threat else "ML_ANOMALY_DETECTED"
                 
                 # Check if we already alerted this IP for this specific threat type in the last 5 mins
-                recent_alert = Alert.query.filter(
-                    Alert.source_ip == ip,
-                    Alert.alert_type == alert_type,
-                    Alert.timestamp >= since_time
+                recent_alert = Alert.objects(
+                    source_ip=ip,
+                    alert_type=alert_type,
+                    timestamp__gte=since_time
                 ).first()
                 
                 if not recent_alert:
@@ -87,23 +87,32 @@ def run_detection():
                     if is_anomaly and not is_threat:
                         desc = f"Zero-Day Anomaly Detected: Traffic from {ip} deviated from baseline."
                         
+                    # Nuanced Severity based on Kaggle Attack Category
+                    if is_threat:
+                        details_lower = str(row['details']).lower()
+                        if any(k in details_lower for k in ['dos', 'exploits', 'backdoor', 'analysis']):
+                            assigned_severity = "critical"
+                        elif any(k in details_lower for k in ['reconnaissance', 'fuzzers']):
+                            assigned_severity = "medium"
+                        else:
+                            assigned_severity = "high"
+                    else:
+                        assigned_severity = "high" # Anomalies default to High
+                        
                     alert = Alert(
                         alert_type=alert_type,
-                        severity="critical" if is_threat else "high",
+                        severity=assigned_severity,
                         description=desc,
                         source_ip=ip,
-                        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
+                        timestamp=datetime.now(timezone.utc)
                     )
-                    db.session.add(alert)
-                    db.session.flush()
+                    alert.save()
                     try:
                         dispatch_alert(current_app._get_current_object(), alert)
                     except:
                         pass
                     new_alerts.append(alert)
         
-        if new_alerts:
-            db.session.commit()
         return new_alerts
 
     # -------------------------------------------------------------
@@ -112,10 +121,10 @@ def run_detection():
     settings = SystemSettings.get_settings()
     for ip, count in ip_failure_counts.items():
         if count >= settings.brute_force_threshold:
-            recent_alert = Alert.query.filter(
-                Alert.source_ip == ip,
-                Alert.alert_type == "REPEATED_FAILURES",
-                Alert.timestamp >= since_time
+            recent_alert = Alert.objects(
+                source_ip=ip,
+                alert_type="REPEATED_FAILURES",
+                timestamp__gte=since_time
             ).first()
             if not recent_alert:
                 alert = Alert(
@@ -123,43 +132,50 @@ def run_detection():
                     severity="high",
                     description=f"Rule-Based Detection: {count} failed continuous actions detected from IP {ip}.",
                     source_ip=ip,
-                    timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
+                    timestamp=datetime.now(timezone.utc)
                 )
-                db.session.add(alert)
-                db.session.flush()
+                alert.save()
                 try:
                     dispatch_alert(current_app._get_current_object(), alert)
                 except:
                     pass
                 new_alerts.append(alert)
 
-    # Generic Keyword Threats
-    generic_keywords = ["failed", "attack", "sql", "scan", "union select"]
+    # Keyword-Based Threats with Severity Levels
+    threat_rules = [
+        {"keywords": ["sql", "union select", "drop table", "select * from"], "severity": "critical", "type": "SQL_INJECTION"},
+        {"keywords": ["ddos", "flood", "10,000 requests"], "severity": "critical", "type": "DOS_ATTACK"},
+        {"keywords": ["failed", "attack", "unauthorized"], "severity": "high", "type": "ACCESS_ATTEMPT"},
+        {"keywords": ["scan", "nmap"], "severity": "medium", "type": "RECONNAISSANCE"}
+    ]
+
     for log in recent_logs:
         log_details_lower = log.details.lower()
-        if any(keyword in log_details_lower for keyword in generic_keywords):
-             recent_alert = Alert.query.filter(
-                Alert.source_ip == log.ip_address,
-                Alert.alert_type == "KEYWORD_MATCH",
-                Alert.timestamp >= since_time
-             ).first()
-             if not recent_alert:
-                 alert = Alert(
-                     alert_type="KEYWORD_MATCH",
-                     severity="high",
-                     description=f"Rule-Based Text Match: '{log.details[:50]}' contained flagged keywords.",
-                     source_ip=log.ip_address,
-                     timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
-                 )
-                 db.session.add(alert)
-                 db.session.flush()
-                 try:
-                    dispatch_alert(current_app._get_current_object(), alert)
-                 except:
-                    pass
-                 new_alerts.append(alert)
+        for rule in threat_rules:
+            if any(kw in log_details_lower for kw in rule["keywords"]):
+                alert_type = rule["type"]
+                recent_alert = Alert.objects(
+                    source_ip=log.ip_address,
+                    alert_type=alert_type,
+                    timestamp__gte=since_time
+                ).first()
+                
+                if not recent_alert:
+                    alert = Alert(
+                        alert_type=alert_type,
+                        severity=rule["severity"],
+                        description=f"Rule-Based Match: '{log.details[:50]}' detected as {alert_type}.",
+                        source_ip=log.ip_address,
+                        timestamp=datetime.now(timezone.utc)
+                    )
+                    alert.save()
+                    try:
+                        dispatch_alert(current_app._get_current_object(), alert)
+                    except:
+                        pass
+                    new_alerts.append(alert)
+                    break # Only one alert type per log entry
 
-    if new_alerts:
-        db.session.commit()
+    pass
         
     return new_alerts

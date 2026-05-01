@@ -94,23 +94,6 @@ const Sidebar = () => {
       <NavItem to="/profile" icon={Users} label="User Identity" />
       <NavItem to="/settings" icon={SettingsIcon} label="System Engine" />
 
-      {/* Footer Branding */}
-      <div className="mt-auto px-6 py-8 border-t border-on-surface/10 bg-on-surface/5">
-        <div className="space-y-4">
-            <div className="flex flex-col gap-1">
-                <p className="text-[9px] text-on-surface-variant/50 uppercase tracking-widest font-data">University Project</p>
-                <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-on-surface font-bold">GLA UNIVERSITY</span>
-                    <span className="text-[9px] text-on-surface-variant font-data">B.TECH CSE</span>
-                </div>
-            </div>
-            <div className="h-px w-full bg-on-surface/10"></div>
-            <div className="flex flex-col gap-1">
-                 <p className="text-[9px] text-primary/60 uppercase tracking-widest font-bold">Faculty Guide</p>
-                 <p className="text-[11px] text-on-surface font-bold tracking-tight">MR. SACHIN UPADHYAY</p>
-            </div>
-        </div>
-      </div>
     </>
   );
 

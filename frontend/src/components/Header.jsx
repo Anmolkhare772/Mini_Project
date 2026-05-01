@@ -82,15 +82,15 @@ const Header = () => {
       </div>
       
       {/* Middle Section: Center Date/Time (Relocated to prevent overlap) */}
-      <div className="flex items-center gap-6 text-xs font-data border-x border-on-surface/5 px-8 h-full">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4 text-xs font-data border-x border-on-surface/5 px-4 h-full">
+        <div className="flex items-center gap-2">
              <span className="text-on-surface-variant/40 hidden xl:inline uppercase tracking-widest text-[9px]">Local Epoch</span>
              <span className="text-primary font-bold text-sm tabular-nums tracking-tighter flex items-center gap-1.5 min-w-[70px]">
                 <Clock size={12} className="opacity-40" />
                 {formatTime(currentTime)}
              </span>
         </div>
-        <div className="flex items-center gap-3 border-l border-on-surface/5 pl-6">
+        <div className="flex items-center gap-2 border-l border-on-surface/5 pl-4">
              <span className="text-on-surface-variant hidden sm:inline tracking-widest uppercase text-[9px]">{formatDate(currentTime)}</span>
              <span className="text-on-surface-variant/40 text-[9px] hidden sm:inline">IST</span>
         </div>

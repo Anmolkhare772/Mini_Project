@@ -21,13 +21,12 @@ def register():
     if len(password) < 6:
         return jsonify({"error": "Password must be at least 6 characters"}), 400
 
-    if User.query.filter_by(email=email).first():
+    if User.objects(email=email).first():
         return jsonify({"error": "Email already registered"}), 409
 
     hashed = bcrypt.generate_password_hash(password).decode("utf-8")
     user = User(name=name, email=email, password=hashed, phone=phone)
-    db.session.add(user)
-    db.session.commit()
+    user.save()
 
     token = create_access_token(identity=str(user.id))
     return jsonify({
@@ -46,7 +45,7 @@ def login():
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
 
-    user = User.query.filter_by(email=email).first()
+    user = User.objects(email=email).first()
     if not user or not bcrypt.check_password_hash(user.password, password):
         return jsonify({"error": "Invalid email or password"}), 401
 
@@ -62,7 +61,7 @@ def login():
 @jwt_required()
 def profile():
     user_id = get_jwt_identity()
-    user = User.query.get(int(user_id))
+    user = User.objects(id=user_id).first()
     if not user:
         return jsonify({"error": "User not found"}), 404
     return jsonify({"user": user.to_dict()}), 200

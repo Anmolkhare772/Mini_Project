@@ -13,7 +13,7 @@ export default function FooterCTA() {
           Ready to <span className="text-cyber-neon-blue">Secure</span> Your Infrastructure?
         </h2>
         <p className="text-gray-400 mb-12 text-lg">
-          Join leading security teams using the CyberShield Lab to detect and neutralize threats in real-time.
+          Join leading security teams using the Trinetra Lab to detect and neutralize threats in real-time.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-24">
@@ -31,7 +31,7 @@ export default function FooterCTA() {
 
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2 opacity-60">
-            <span className="text-white font-display font-bold tracking-tight">CyberShield</span>
+            <span className="text-white font-display font-bold tracking-tight">Trinetra</span>
             <span className="text-gray-600 text-xs">© 2026 Lab Edition</span>
           </div>
           

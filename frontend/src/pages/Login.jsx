@@ -73,8 +73,8 @@ const Login = () => {
 
         <div className="relative z-10 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-8">
-            <div className="p-2 bg-cyber-neon-blue/10 border border-cyber-neon-blue/20 rounded">
-              <Shield size={20} className="text-cyber-neon-blue" />
+            <div className="flex items-center justify-center">
+              <img src="/logo.png" alt="Trinetra" className="w-8 h-8 object-contain drop-shadow-[0_0_10px_rgba(0,207,255,0.5)]" />
             </div>
             <div>
               <h1 className="text-sm font-bold text-white tracking-widest uppercase">Sentinel_Command</h1>
@@ -114,18 +114,18 @@ const Login = () => {
       </div>
 
       {/* RIGHT PANEL: Authentication Terminal */}
-      <div className="flex-1 relative flex flex-col items-center justify-center px-6">
+      <div className="flex-1 relative flex flex-col items-center justify-center px-6 pt-24 pb-12 overflow-y-auto">
         {/* Animated Background Grid */}
         <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:5rem_5rem]"></div>
         </div>
 
         <div className="w-full max-w-[440px] relative z-10">
-          <div className="mb-12 flex flex-col items-center scale-125">
-            <Link to="/" className="relative">
+          <div className="mb-16 flex flex-col items-center">
+            <Link to="/" className="relative transition-transform hover:scale-105 duration-300">
               <BrandLogo size="lg" />
             </Link>
-            <div className="h-[1px] w-24 bg-cyber-neon-blue/40 mt-8"></div>
+            <div className="h-[1px] w-32 bg-gradient-to-r from-transparent via-cyber-neon-blue/40 to-transparent mt-8"></div>
           </div>
 
           <div className="glass-premium p-8 rounded-xl border border-white/10 relative">

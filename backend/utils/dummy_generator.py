@@ -2,7 +2,7 @@ import random
 import time
 from datetime import datetime, timezone
 from faker import Faker
-from models import db, Log
+from models import Log
 from services.detection_engine import run_detection
 import threading
 
@@ -17,7 +17,7 @@ def seed_database_with_logs(app):
     Seeds the database with a mix of normal and malicious logs for demonstration.
     Must be called within an app context.
     """
-    if Log.query.count() > 0:
+    if Log.objects.count() > 0:
         return # Already seeded
         
     print("Seeding database with initial logs...")
@@ -31,7 +31,7 @@ def seed_database_with_logs(app):
             status="success",
             details="Normal connection established"
         )
-        db.session.add(log)
+        log.save()
         
     # Generate an "Optimal" repeated failure event
     attacker_ip = random.choice(ATTACKER_IPS)
@@ -43,7 +43,7 @@ def seed_database_with_logs(app):
             status="failure",
             details="Invalid credentials provided"
         )
-        db.session.add(log)
+        log.save()
         
     # Generate a SQL Injection attempt
     log = Log(
@@ -53,9 +53,7 @@ def seed_database_with_logs(app):
         status="success",
         details="POST /login username=' OR 1=1--"
     )
-    db.session.add(log)
-    
-    db.session.commit()
+    log.save()
     print("Initial logs seeded.")
     
     # Run detection on initial seed
@@ -91,8 +89,7 @@ def generate_background_logs(app):
                     status=status,
                     details=details
                 )
-                db.session.add(log)
-                db.session.commit()
+                log.save()
                 
                 # Every 5 seconds, run detection
                 if random.random() < 0.2:
@@ -140,8 +137,7 @@ def tail_logs_file(app):
                         status="success", # default
                         details=line.strip()
                     )
-                    db.session.add(log)
-                    db.session.commit()
+                    log.save()
                     
                     # Instantly run detection so dashboard sees it!
                     run_detection()

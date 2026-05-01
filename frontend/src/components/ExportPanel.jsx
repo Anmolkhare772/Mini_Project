@@ -14,11 +14,11 @@ const ExportPanel = ({ alerts = [], stats = null }) => {
   const exportCSV = async () => {
     setExporting('csv');
     try {
-      const response = await api.get('/api/reports/csv', { responseType: 'blob' });
+      const response = await api.get('/reports/csv', { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `cybershield_alerts_${new Date().toISOString().slice(0, 10)}.csv`);
+      link.setAttribute('download', `trinetra_alerts_${new Date().toISOString().slice(0, 10)}.csv`);
       document.body.appendChild(link);
       link.click();
       toast.success('CSV Report Downloaded');
@@ -33,11 +33,11 @@ const ExportPanel = ({ alerts = [], stats = null }) => {
   const generatePDFReport = async () => {
     setExporting('pdf');
     try {
-      const response = await api.get('/api/reports/pdf', { responseType: 'blob' });
+      const response = await api.get('/reports/pdf', { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `cybershield_executive_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+      link.setAttribute('download', `trinetra_executive_report_${new Date().toISOString().slice(0, 10)}.pdf`);
       document.body.appendChild(link);
       link.click();
       toast.success('Executive PDF Report Generated');
@@ -49,17 +49,17 @@ const ExportPanel = ({ alerts = [], stats = null }) => {
   };
 
   // ─── Email Report (simulated) ─────────────────────────────────
-  const emailReport = () => {
+  const emailReport = async () => {
     setExporting('email');
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-      {
-        loading: 'Preparing email dispatch...',
-        success: 'Incident report queued for email delivery',
-        error: 'Email dispatch failed',
-      }
-    );
-    setTimeout(() => setExporting(null), 2500);
+    try {
+      await api.post('/reports/email');
+      toast.success('Incident report delivered to your inbox');
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Email dispatch failed';
+      toast.error(msg);
+    } finally {
+      setExporting(null);
+    }
   };
 
   return (

@@ -50,7 +50,7 @@ const Dashboard = () => {
         </div>
       </div>
       {/* Skeleton KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-7 gap-4">
         {[...Array(7)].map((_, i) => <SkeletonKpiCard key={i} />)}
       </div>
       {/* Skeleton Charts */}
@@ -129,7 +129,7 @@ const Dashboard = () => {
       )}
 
       {/* KPI Section */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-7 gap-4">
         <KpiCard title="Total Alerts" value={stats.total_alerts} subtitle="Threats Detected" colorClass="red" />
         <KpiCard title="Critical" value={stats.critical_alerts} subtitle="Action Required" colorClass="red" isActive={stats.critical_alerts > 0} />
         <KpiCard title="High" value={stats.high_alerts} subtitle="Priority Check" colorClass="orange" />

@@ -25,17 +25,15 @@ def update_settings():
     if 'sms_notifications' in data:
         settings.sms_notifications = data['sms_notifications']
         
-    db.session.commit()
+    settings.save()
     return jsonify(settings.to_dict()), 200
 
 @settings_bp.route('/flush', methods=['POST'])
 @jwt_required()
 def flush_telemetry():
     try:
-        Log.query.delete()
-        Alert.query.delete()
-        db.session.commit()
+        Log.objects.delete()
+        Alert.objects.delete()
         return jsonify({"message": "All telemetry flushed successfully"}), 200
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": str(e)}), 500

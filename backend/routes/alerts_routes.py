@@ -14,21 +14,21 @@ def get_alerts():
     severity = request.args.get("severity", "").strip().lower()
     alert_type = request.args.get("alert_type", "").strip()
 
-    query = Alert.query
+    query = Alert.objects
 
     if severity in ("low", "medium", "high", "critical"):
-        query = query.filter_by(severity=severity)
+        query = query.filter(severity=severity)
     if alert_type:
-        query = query.filter(Alert.alert_type.ilike(f"%{alert_type}%"))
+        query = query.filter(alert_type__icontains=alert_type)
 
-    query = query.order_by(Alert.timestamp.desc())
-    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    total = query.count()
+    items = query.order_by('-timestamp').skip((page - 1) * per_page).limit(per_page)
 
     return jsonify({
-        "alerts": [a.to_dict() for a in pagination.items],
-        "total": pagination.total,
-        "pages": pagination.pages,
-        "page": pagination.page,
+        "alerts": [a.to_dict() for a in items],
+        "total": total,
+        "pages": (total + per_page - 1) // per_page,
+        "page": page,
     }), 200
 
 
@@ -51,25 +51,24 @@ def create_alert():
         source_ip=source_ip,
         timestamp=datetime.now(timezone.utc),
     )
-    db.session.add(alert)
-    db.session.commit()
+    alert.save()
     return jsonify({"message": "Alert created", "alert": alert.to_dict()}), 201
 
 
 @alerts_bp.route("/api/alerts/stats", methods=["GET"])
 @jwt_required()
 def alert_stats():
-    total = Alert.query.count()
-    critical = Alert.query.filter_by(severity="critical").count()
-    high = Alert.query.filter_by(severity="high").count()
-    medium = Alert.query.filter_by(severity="medium").count()
-    low = Alert.query.filter_by(severity="low").count()
+    total = Alert.objects.count()
+    critical = Alert.objects(severity="critical").count()
+    high = Alert.objects(severity="high").count()
+    medium = Alert.objects(severity="medium").count()
+    low = Alert.objects(severity="low").count()
 
-    # Attack type breakdown
-    from sqlalchemy import func
-    type_counts = db.session.query(
-        Alert.alert_type, func.count(Alert.id)
-    ).group_by(Alert.alert_type).all()
+    # Attack type breakdown using aggregation
+    pipeline = [
+        {"$group": {"_id": "$alert_type", "count": {"$sum": 1}}}
+    ]
+    type_counts = list(Alert.objects.aggregate(pipeline))
 
     return jsonify({
         "total": total,
@@ -77,5 +76,5 @@ def alert_stats():
         "high": high,
         "medium": medium,
         "low": low,
-        "by_type": {t: c for t, c in type_counts},
+        "by_type": {t["_id"]: t["count"] for t in type_counts},
     }), 200

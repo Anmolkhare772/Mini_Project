@@ -17,7 +17,7 @@ export default function HeroSection() {
         </div>
         
         <h1 className="text-5xl md:text-7xl font-display font-bold text-white mb-6 leading-tight">
-          Real-Time <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-neon-blue to-cyber-neon-green">Cyber Threat</span> Detection System
+          Real-Time <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-neon-blue to-cyber-neon-green">Trinetra</span> Detection System
         </h1>
         
         <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
@@ -32,9 +32,12 @@ export default function HeroSection() {
             Launch Dashboard
             <Zap size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
-          <button className="bg-white/5 border border-white/10 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-white/10 transition-all backdrop-blur-sm">
+          <Link 
+            to="/logs" 
+            className="bg-white/5 border border-white/10 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-white/10 transition-all backdrop-blur-sm flex items-center justify-center"
+          >
             View Live Logs
-          </button>
+          </Link>
         </div>
       </div>
 

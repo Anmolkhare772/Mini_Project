@@ -1,8 +1,12 @@
 import os
 import logging
 from flask_mail import Mail, Message
-from models import SystemSettings
-from twilio.rest import Client
+from models import SystemSettings, User
+try:
+    from twilio.rest import Client
+except ImportError:
+    Client = None
+    logger.warning("Twilio library not installed. SMS notifications disabled.")
 
 logger = logging.getLogger("cybershield")
 mail = Mail()
@@ -12,7 +16,8 @@ def init_notifications(app):
     # 📧 Email Configuration
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-    app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+    app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'false').lower() == 'true'
+    app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'true').lower() == 'true'
     app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
@@ -47,9 +52,9 @@ def _send_email(app, alert):
     try:
         with app.app_context():
             msg = Message(
-                subject=f"🚨 CyberShield Alert: {alert.severity.upper()} Threat Detected",
+                subject=f"🚨 Trinetra Alert: {alert.severity.upper()} Threat Detected",
                 recipients=[recipient],
-                body=f"--- CYBERSHIELD TACTICAL ALERT ---\n\n"
+                body=f"--- TRINETRA TACTICAL ALERT ---\n\n"
                      f"Type: {alert.alert_type}\n"
                      f"Severity: {alert.severity.upper()}\n"
                      f"Source IP: {alert.source_ip}\n"
@@ -77,12 +82,16 @@ def _send_sms(app, alert):
         return
         
     try:
+        if not Client:
+            logger.error("SMS Dispatch Failed: Twilio library not available.")
+            return
+            
         client = Client(account_sid, auth_token)
         
         # Broadcast to all users with a phone number
         with app.app_context():
             # Use db.session if available, or just query.
-            users_with_phones = User.query.filter(User.phone != None, User.phone != '').all()
+            users_with_phones = User.objects(phone__nin=[None, ''])
             
             if not users_with_phones:
                 logger.info("SMS Dispatch: No users found with registered phone numbers.")
@@ -91,7 +100,7 @@ def _send_sms(app, alert):
             for user in users_with_phones:
                 try:
                     message = client.messages.create(
-                        body=f"🚨 CyberShield Sentinel Alert!\n\n"
+                        body=f"🚨 Trinetra Sentinel Alert!\n\n"
                              f"Threat: {alert.alert_type}\n"
                              f"IP: {alert.source_ip}\n"
                              f"Severity: {alert.severity.upper()}\n"

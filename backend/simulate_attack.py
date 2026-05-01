@@ -116,29 +116,72 @@ def upload_to_cloudwatch(cw, now, entries):
     print(f"[CW]  Stream   : {CW_LOG_STREAM}")
 
 
+def load_kaggle_attacks():
+    """Loads a random sample of attacks from the Kaggle UNSW-NB15 dataset."""
+    import pandas as pd
+    import numpy as np
+    dataset_path = 'ml_engine/datasets/security_dataset.csv'
+    
+    if not os.path.exists(dataset_path):
+        print(f"[!] Dataset not found at {dataset_path}. Falling back to hardcoded logs.")
+        return ATTACK_LOGS
+        
+    try:
+        columns = [
+            'id', 'dur', 'proto', 'service', 'state', 'spkts', 'dpkts', 'sbytes', 'dbytes', 'rate', 
+            'sttl', 'dttl', 'sload', 'dload', 'sloss', 'dloss', 'sinpkt', 'dinpkt', 'sjit', 'djit', 
+            'swin', 'stcpb', 'dtcpb', 'dwin', 'tcprtt', 'synack', 'ackdat', 'smean', 'dmean', 
+            'trans_depth', 'res_bdy_len', 'ct_srv_src', 'ct_state_ttl', 'ct_dst_ltm', 'ct_src_dport_ltm', 
+            'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'is_ftp_login', 'ct_ftp_cmd', 'ct_flw_http_mthd', 
+            'ct_src_ltm', 'ct_srv_dst', 'is_sm_ips_ports', 'attack_cat', 'label'
+        ]
+        df = pd.read_csv(dataset_path, names=columns)
+        
+        # Filter only actual attacks (label == 1) and take a random sample
+        attacks_df = df[df['label'] == 1].sample(n=30, replace=True)
+        
+        kaggle_logs = []
+        for index, row in attacks_df.iterrows():
+            # Construct a realistic IP address based on the row ID or random
+            fake_ip = f"10.0.{np.random.randint(1, 255)}.{np.random.randint(1, 255)}"
+            
+            attack_category = str(row['attack_cat']).strip()
+            if attack_category == 'nan' or not attack_category:
+                attack_category = "Generic Attack"
+                
+            kaggle_logs.append({
+                "ip": fake_ip,
+                "event": f"Kaggle Dataset: {attack_category}",
+                "status": "failure",
+                "details": f"Proto: {row['proto']} | Service: {row['service']} | State: {row['state']} | Attack: {attack_category} | Pkts: {row['spkts']} | Rate: {row['rate']}"
+            })
+            
+        return kaggle_logs
+    except Exception as e:
+        print(f"[!] Error loading Kaggle dataset: {e}")
+        return ATTACK_LOGS
+
 def simulate():
+    import numpy as np # Ensure numpy is available for fake IPs
     now = datetime.now(timezone.utc)
     s3, cw = get_clients()
 
-    for entry in ATTACK_LOGS:
+    # Load real Kaggle attacks instead of hardcoded ones
+    active_logs = load_kaggle_attacks()
+
+    for entry in active_logs:
         entry["timestamp"] = now.isoformat()
-    lines = [json.dumps(e) for e in ATTACK_LOGS]
+    lines = [json.dumps(e) for e in active_logs]
 
     print("=" * 60)
-    print("  CyberShield Attack Simulator")
+    print("  CyberShield Attack Simulator (Kaggle Edition)")
     print("=" * 60)
 
     upload_to_s3(s3, now, lines)
-    upload_to_cloudwatch(cw, now, ATTACK_LOGS)
+    upload_to_cloudwatch(cw, now, active_logs)
 
     print()
-    print("Attack types simulated:")
-    print("  - SSH Brute Force     (5 failed login attempts)")
-    print("  - SQL Injection       (3 payloads)")
-    print("  - Port Scanning       (7 service probes)")
-    print("  - XSS Attack          (2 payloads)")
-    print("  - DDoS / SYN Flood    (2 signatures)")
-    print("  - Directory Traversal (1 payload)")
+    print(f"Simulated {len(active_logs)} attacks from the UNSW-NB15 Kaggle Dataset.")
     print()
     print("To view logs on AWS CloudWatch:")
     print(f"  console.aws.amazon.com -> CloudWatch -> Log Groups -> {CW_LOG_GROUP}")

@@ -5,7 +5,6 @@ from flask_jwt_extended import JWTManager
 from models import db, Log
 from config import Config
 from datetime import datetime, timezone
-from flask_migrate import Migrate
 from services.detection_engine import run_detection
 
 import logging
@@ -29,7 +28,6 @@ def create_app():
     allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:5174").split(",")
     CORS(app, resources={r"/api/*": {"origins": allowed_origins}}, supports_credentials=True)
     db.init_app(app)
-    Migrate(app, db)
     JWTManager(app)
     from services.notification_service import init_notifications
     init_notifications(app)
@@ -40,7 +38,7 @@ def create_app():
     limiter = Limiter(
         app=app,
         key_func=get_remote_address,
-        default_limits=["200 per day", "50 per hour"],
+        default_limits=["10000 per day", "2000 per hour"],
         storage_uri="memory://",
     )
 
@@ -49,7 +47,7 @@ def create_app():
         return jsonify({
             "status": "online",
             "version": "1.0.0",
-            "product": "CyberShield Sentinel",
+            "product": "Trinetra Sentinel",
             "message": "Security Telemetry API Operational"
         }), 200
 
@@ -85,8 +83,7 @@ def create_app():
             details=log_text,
             timestamp=datetime.now(timezone.utc)
         )
-        db.session.add(new_log)
-        db.session.commit()
+        new_log.save()
         
         # 🧠 Run detection to populate Alerts for the Frontend dashboard
         run_detection()
@@ -110,9 +107,8 @@ def create_app():
     from routes.settings_routes import settings_bp
     app.register_blueprint(settings_bp)
 
-    # Setup database + background services
+    # Setup background services
     with app.app_context():
-        db.create_all()
 
         import threading
 

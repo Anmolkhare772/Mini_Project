@@ -39,8 +39,7 @@ def add_log():
         details=details,
         timestamp=datetime.now(timezone.utc),
     )
-    db.session.add(log)
-    db.session.commit()
+    log.save()
 
     # Auto-run detection after inserting a log
     new_alerts = run_detection()
@@ -72,8 +71,7 @@ def add_raw_log():
         details=raw_text,
         timestamp=datetime.now(timezone.utc),
     )
-    db.session.add(log)
-    db.session.commit()
+    log.save()
     
     # Run detection on this new entry
     new_alerts = run_detection()
@@ -94,30 +92,30 @@ def get_logs():
     event_filter = request.args.get("event_type", "").strip()
     ip_filter = request.args.get("ip_address", "").strip()
 
-    query = Log.query
+    query = Log.objects
 
     if status_filter in ("success", "failure"):
-        query = query.filter_by(status=status_filter)
+        query = query.filter(status=status_filter)
     if event_filter:
-        query = query.filter(Log.event_type.ilike(f"%{event_filter}%"))
+        query = query.filter(event_type__icontains=event_filter)
     if ip_filter:
-        query = query.filter(Log.ip_address.ilike(f"%{ip_filter}%"))
+        query = query.filter(ip_address__icontains=ip_filter)
 
-    query = query.order_by(Log.timestamp.desc())
-    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    total = query.count()
+    items = query.order_by('-timestamp').skip((page - 1) * per_page).limit(per_page)
 
     return jsonify({
-        "logs": [log.to_dict() for log in pagination.items],
-        "total": pagination.total,
-        "pages": pagination.pages,
-        "page": pagination.page,
+        "logs": [log.to_dict() for log in items],
+        "total": total,
+        "pages": (total + per_page - 1) // per_page,
+        "page": page,
     }), 200
 
 
-@logs_bp.route("/api/logs/<int:log_id>", methods=["GET"])
+@logs_bp.route("/api/logs/<log_id>", methods=["GET"])
 @jwt_required()
 def get_log(log_id):
-    log = Log.query.get(log_id)
+    log = Log.objects(id=log_id).first()
     if not log:
         return jsonify({"error": "Log not found"}), 404
     return jsonify({"log": log.to_dict()}), 200
