@@ -122,6 +122,7 @@ def ingest_from_s3(app):
                             log_ts = datetime.now(timezone.utc)
 
                         log = Log(
+                            user_id="system",
                             timestamp=log_ts,
                             ip_address=parsed["ip_address"],
                             event_type=parsed["event_type"],

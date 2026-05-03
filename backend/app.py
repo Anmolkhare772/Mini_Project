@@ -77,6 +77,7 @@ def create_app():
         status = "failure" if "failed login" in log_text.lower() else "success"
 
         new_log = Log(
+            user_id="system",
             ip_address=ip_address,
             event_type="AWS CloudWatch Log",
             status=status,

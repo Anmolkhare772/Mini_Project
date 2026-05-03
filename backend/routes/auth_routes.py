@@ -36,6 +36,8 @@ def register():
     }), 201
 
 
+from services.simulation_service import start_user_simulation
+
 @auth_bp.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json() or {}
@@ -50,12 +52,25 @@ def login():
         return jsonify({"error": "Invalid email or password"}), 401
 
     token = create_access_token(identity=str(user.id))
+    
+    # Start the automated background simulation for this specific user
+    start_user_simulation(str(user.id))
+    
     return jsonify({
         "message": "Login successful",
         "token": token,
         "user": user.to_dict(),
     }), 200
 
+
+from services.simulation_service import start_user_simulation, stop_user_simulation
+
+@auth_bp.route("/api/logout", methods=["POST"])
+@jwt_required()
+def logout():
+    user_id = get_jwt_identity()
+    stop_user_simulation(user_id)
+    return jsonify({"message": "Logout successful, simulation stopped"}), 200
 
 @auth_bp.route("/api/profile", methods=["GET"])
 @jwt_required()

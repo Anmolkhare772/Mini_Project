@@ -102,7 +102,8 @@ def generate_pdf_buffer(alerts):
 @jwt_required()
 def export_csv():
     try:
-        alerts = Alert.objects.all().order_by('-timestamp')
+        user_id = get_jwt_identity()
+        alerts = Alert.objects(user_id=user_id).order_by('-timestamp')
         data = []
         for a in alerts:
             data.append({
@@ -125,7 +126,8 @@ def export_csv():
 @jwt_required()
 def export_pdf():
     try:
-        alerts = list(Alert.objects.order_by('-timestamp').limit(50))
+        user_id = get_jwt_identity()
+        alerts = list(Alert.objects(user_id=user_id).order_by('-timestamp').limit(50))
         buffer = generate_pdf_buffer(alerts)
         return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name=f"trinetra_report_{datetime.now().strftime('%Y%m%d')}.pdf")
     except Exception as e:
@@ -144,7 +146,8 @@ def email_report():
 
         recipient_email = user.email
         logger.info(f"Generating email report for user {user.name} <{recipient_email}>")
-        alerts = list(Alert.objects.order_by('-timestamp').limit(50))
+        # Filter alerts by user
+        alerts = list(Alert.objects(user_id=user_id).order_by('-timestamp').limit(50))
         buffer = generate_pdf_buffer(alerts)
         
         msg = Message(

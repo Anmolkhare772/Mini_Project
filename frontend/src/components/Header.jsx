@@ -17,7 +17,12 @@ const Header = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post('/logout');
+    } catch (err) {
+      console.error('Logout API call failed', err);
+    }
     localStorage.removeItem('token');
     toast.success('Successfully logged out');
     navigate('/login');

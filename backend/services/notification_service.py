@@ -43,10 +43,21 @@ def dispatch_alert(app, alert):
         _send_sms(app, alert)
 
 def _send_email(app, alert):
-    """Dispatches an email alert"""
-    recipient = os.environ.get('ALERT_RECIPIENT_EMAIL')
+    """Dispatches an email alert to the specific user involved"""
+    recipient = None
+    
+    # Try to get the user's email if alert is tied to a user
+    if alert.user_id and alert.user_id != "system":
+        user = User.objects(id=alert.user_id).first()
+        if user:
+            recipient = user.email
+
+    # Fallback to global recipient if no user email found
     if not recipient:
-        logger.warning("Email notifications enabled but ALERT_RECIPIENT_EMAIL not set in .env")
+        recipient = os.environ.get('ALERT_RECIPIENT_EMAIL')
+
+    if not recipient:
+        logger.warning("Email notifications enabled but no recipient email found")
         return
 
     try:
@@ -60,12 +71,12 @@ def _send_email(app, alert):
                      f"Source IP: {alert.source_ip}\n"
                      f"Description: {alert.description}\n"
                      f"Timestamp: {alert.timestamp}\n\n"
-                     f"Action Required: Please log in to the Command Center to investigate."
+                     f"Action Required: Please log in to your Command Center to investigate."
             )
             # Only actually send if credentials are provided
             if app.config.get('MAIL_PASSWORD'):
                 mail.send(msg)
-                logger.info(f"Email dispatch successful for alert {alert.id}")
+                logger.info(f"Email dispatch successful for alert {alert.id} to {recipient}")
             else:
                 logger.info(f"[MOCK] Email dispatch triggered for alert {alert.id} to {recipient}")
     except Exception as e:

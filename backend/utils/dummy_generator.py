@@ -25,6 +25,7 @@ def seed_database_with_logs(app):
     # Generate some normal traffic
     for _ in range(50):
         log = Log(
+            user_id="system",
             timestamp=datetime.now(timezone.utc),
             ip_address=random.choice(NORMAL_IPS),
             event_type=f"{random.choice(SERVICES)} Connection",
@@ -37,6 +38,7 @@ def seed_database_with_logs(app):
     attacker_ip = random.choice(ATTACKER_IPS)
     for _ in range(8):
         log = Log(
+            user_id="system",
             timestamp=datetime.now(timezone.utc),
             ip_address=attacker_ip,
             event_type="Authentication Attempt",
@@ -47,6 +49,7 @@ def seed_database_with_logs(app):
         
     # Generate a SQL Injection attempt
     log = Log(
+        user_id="system",
         timestamp=datetime.now(timezone.utc),
         ip_address=random.choice(ATTACKER_IPS),
         event_type="HTTP Requests",
@@ -57,7 +60,7 @@ def seed_database_with_logs(app):
     print("Initial logs seeded.")
     
     # Run detection on initial seed
-    run_detection()
+    run_detection(user_id="system")
 
 def generate_background_logs(app):
     """
@@ -83,6 +86,7 @@ def generate_background_logs(app):
                     status = "success"
 
                 log = Log(
+                    user_id="system",
                     timestamp=datetime.now(timezone.utc),
                     ip_address=ip,
                     event_type=event_type,
@@ -93,7 +97,7 @@ def generate_background_logs(app):
                 
                 # Every 5 seconds, run detection
                 if random.random() < 0.2:
-                    run_detection()
+                    run_detection(user_id="system")
                     
                 time.sleep(random.uniform(1, 5)) # Pause 1-5 seconds between logs
             except Exception as e:
@@ -131,6 +135,7 @@ def tail_logs_file(app):
                         ip = ip_match.group(0)
 
                     log = Log(
+                        user_id="system",
                         timestamp=datetime.now(timezone.utc),
                         ip_address=ip,
                         event_type="File Ingestion",
@@ -140,7 +145,7 @@ def tail_logs_file(app):
                     log.save()
                     
                     # Instantly run detection so dashboard sees it!
-                    run_detection()
+                    run_detection(user_id="system")
                 except Exception as e:
                     print(f"Error ingesting log line: {e}")
 

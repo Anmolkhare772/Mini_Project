@@ -1,30 +1,36 @@
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, timedelta, timezone
 from models import db, Log, Alert
+from services.simulation_service import start_user_simulation
 
 dashboard_bp = Blueprint("dashboard", __name__)
-
 
 @dashboard_bp.route("/api/dashboard/stats", methods=["GET"])
 @jwt_required()
 def dashboard_stats():
-    total_logs = Log.objects.count()
-    success_logs = Log.objects(status="success").count()
-    failure_logs = Log.objects(status="failure").count()
-    total_alerts = Alert.objects.count()
-    critical_alerts = Alert.objects(severity="critical").count()
-    high_alerts = Alert.objects(severity="high").count()
-    medium_alerts = Alert.objects(severity="medium").count()
-    low_alerts = Alert.objects(severity="low").count()
-    unread_alerts = Alert.objects(is_read=False).count()
+    user_id = get_jwt_identity()
+    start_user_simulation(user_id)
+    user_logs = Log.objects(user_id=user_id)
+    user_alerts = Alert.objects(user_id=user_id)
 
-    unique_ips = len(Alert.objects(source_ip__ne="").distinct("source_ip"))
+    total_logs = user_logs.count()
+    success_logs = user_logs.filter(status="success").count()
+    failure_logs = user_logs.filter(status="failure").count()
+    
+    total_alerts = user_alerts.count()
+    critical_alerts = user_alerts.filter(severity="critical").count()
+    high_alerts = user_alerts.filter(severity="high").count()
+    medium_alerts = user_alerts.filter(severity="medium").count()
+    low_alerts = user_alerts.filter(severity="low").count()
+    unread_alerts = user_alerts.filter(is_read=False).count()
+
+    unique_ips = len(user_alerts.filter(source_ip__ne="").distinct("source_ip"))
 
     # Attacks over time (last 24 hours, grouped by hour)
     since = datetime.now(timezone.utc) - timedelta(hours=24)
     timeline_pipeline = [
-        {"$match": {"timestamp": {"$gte": since}}},
+        {"$match": {"user_id": user_id, "timestamp": {"$gte": since}}},
         {"$group": {
             "_id": {
                 "$dateToString": {"format": "%Y-%m-%d %H:00", "date": "$timestamp"}
@@ -38,6 +44,7 @@ def dashboard_stats():
 
     # Threat type distribution
     type_pipeline = [
+        {"$match": {"user_id": user_id}},
         {"$group": {"_id": "$alert_type", "count": {"$sum": 1}}}
     ]
     type_counts = list(Alert.objects.aggregate(type_pipeline))
@@ -45,7 +52,7 @@ def dashboard_stats():
  
     # Top attacker IPs
     top_ips_pipeline = [
-        {"$match": {"source_ip": {"$ne": ""}}},
+        {"$match": {"user_id": user_id, "source_ip": {"$ne": ""}}},
         {"$group": {"_id": "$source_ip", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
         {"$limit": 10}
@@ -55,6 +62,7 @@ def dashboard_stats():
  
     # Event type breakdown from logs
     event_pipeline = [
+        {"$match": {"user_id": user_id}},
         {"$group": {"_id": "$event_type", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
         {"$limit": 10}
@@ -63,7 +71,7 @@ def dashboard_stats():
     event_types = [{"type": t["_id"], "count": t["count"]} for t in event_types_raw]
  
     # Recent alerts
-    recent_alerts = [a.to_dict() for a in Alert.objects.order_by('-timestamp').limit(5)]
+    recent_alerts = [a.to_dict() for a in user_alerts.order_by('-timestamp').limit(5)]
 
     return jsonify({
         "total_logs": total_logs,

@@ -44,8 +44,9 @@ class User(db.Document):
 
 
 class Log(db.Document):
-    meta = {'collection': 'logs', 'indexes': ['timestamp', 'ip_address']}
+    meta = {'collection': 'logs', 'indexes': ['user_id', 'timestamp', 'ip_address']}
 
+    user_id = db.StringField(required=True)
     timestamp = db.DateTimeField(default=lambda: datetime.now(timezone.utc))
     ip_address = db.StringField(required=True, max_length=45)
     event_type = db.StringField(required=True, max_length=80)
@@ -55,6 +56,7 @@ class Log(db.Document):
     def to_dict(self):
         return {
             "id": str(self.id),
+            "user_id": self.user_id,
             "timestamp": self.timestamp.isoformat() + "Z" if self.timestamp else None,
             "ip_address": self.ip_address,
             "event_type": self.event_type,
@@ -64,8 +66,9 @@ class Log(db.Document):
 
 
 class Alert(db.Document):
-    meta = {'collection': 'alerts', 'indexes': ['alert_type', 'severity', 'timestamp']}
+    meta = {'collection': 'alerts', 'indexes': ['user_id', 'alert_type', 'severity', 'timestamp']}
 
+    user_id = db.StringField(required=True)
     alert_type = db.StringField(required=True, max_length=80)
     severity = db.StringField(required=True, max_length=20)  # low / medium / high / critical
     description = db.StringField(required=True)
@@ -76,6 +79,7 @@ class Alert(db.Document):
     def to_dict(self):
         return {
             "id": str(self.id),
+            "user_id": self.user_id,
             "alert_type": self.alert_type,
             "severity": self.severity,
             "description": self.description,

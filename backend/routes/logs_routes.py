@@ -1,11 +1,10 @@
 from flask import Blueprint, request, jsonify, current_app
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, timezone
 from models import db, Log
 from services.detection_engine import run_detection
 
 logs_bp = Blueprint("logs", __name__)
-
 
 @logs_bp.route("/api/logs/sync", methods=["POST"])
 @jwt_required()
@@ -17,12 +16,10 @@ def sync_from_s3():
     count = ingest_from_s3(current_app._get_current_object())
     return jsonify({"message": f"S3 sync complete. {count} new log(s) ingested.", "new_logs": count}), 200
 
-
-
-
 @logs_bp.route("/api/logs/add", methods=["POST"])
 @jwt_required()
 def add_log():
+    user_id = get_jwt_identity()
     data = request.get_json() or {}
     ip_address = data.get("ip_address", "").strip()
     event_type = data.get("event_type", "").strip()
@@ -33,6 +30,7 @@ def add_log():
         return jsonify({"error": "ip_address, event_type, and status (success/failure) are required"}), 400
 
     log = Log(
+        user_id=user_id,
         ip_address=ip_address,
         event_type=event_type,
         status=status,
@@ -41,8 +39,8 @@ def add_log():
     )
     log.save()
 
-    # Auto-run detection after inserting a log
-    new_alerts = run_detection()
+    # Auto-run detection after inserting a log for this user
+    new_alerts = run_detection(user_id=user_id)
 
     return jsonify({
         "message": "Log added successfully",
@@ -53,6 +51,7 @@ def add_log():
 @logs_bp.route("/api/logs/raw", methods=["POST"])
 @jwt_required()
 def add_raw_log():
+    user_id = get_jwt_identity()
     data = request.get_json() or {}
     raw_text = data.get("raw_log", "").strip()
     
@@ -65,6 +64,7 @@ def add_raw_log():
     ip_address = ip_match.group(0) if ip_match else "Unknown IP"
     
     log = Log(
+        user_id=user_id,
         ip_address=ip_address,
         event_type="Manual Analysis",
         status="success", # default
@@ -73,8 +73,8 @@ def add_raw_log():
     )
     log.save()
     
-    # Run detection on this new entry
-    new_alerts = run_detection()
+    # Run detection on this new entry for this user
+    new_alerts = run_detection(user_id=user_id)
     
     return jsonify({
         "message": "Log processed",
@@ -86,13 +86,14 @@ def add_raw_log():
 @logs_bp.route("/api/logs", methods=["GET"])
 @jwt_required()
 def get_logs():
+    user_id = get_jwt_identity()
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
     status_filter = request.args.get("status", "").strip().lower()
     event_filter = request.args.get("event_type", "").strip()
     ip_filter = request.args.get("ip_address", "").strip()
 
-    query = Log.objects
+    query = Log.objects(user_id=user_id)
 
     if status_filter in ("success", "failure"):
         query = query.filter(status=status_filter)
@@ -111,11 +112,11 @@ def get_logs():
         "page": page,
     }), 200
 
-
 @logs_bp.route("/api/logs/<log_id>", methods=["GET"])
 @jwt_required()
 def get_log(log_id):
-    log = Log.objects(id=log_id).first()
+    user_id = get_jwt_identity()
+    log = Log.objects(id=log_id, user_id=user_id).first()
     if not log:
         return jsonify({"error": "Log not found"}), 404
     return jsonify({"log": log.to_dict()}), 200
