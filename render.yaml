@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: cybershield-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python backend/app.py
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: MONGODB_URI
+        sync: false # You will need to add your MongoDB Atlas URI in the Render Dashboard
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
